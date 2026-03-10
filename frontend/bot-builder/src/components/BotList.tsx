@@ -165,25 +165,28 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 relative">
         {['all', 'draft', 'published', 'archived'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f as any)}
-            className={`px-4 py-2 text-sm font-normal transition-all ${
+            className={`relative px-4 py-2 text-sm font-normal transition-all duration-300 ${
               filter === f
-                ? 'text-white border-b-2 border-white'
-                : 'text-white/60 hover:text-white/90 border-b-2 border-transparent'
+                ? 'text-white'
+                : 'text-white/60 hover:text-white/90'
             }`}
           >
             {f === 'all' ? t('botList.filter.all') : getStatusLabel(f)}
+            {filter === f && (
+              <span className="absolute bottom-0 left-0 right-0 h-px bg-white animate-[slideIn_0.3s_ease-out]" />
+            )}
           </button>
         ))}
       </div>
 
       {/* Bot List */}
       {bots.length === 0 ? (
-        <div className="glass-card p-16 text-center border-2 border-dashed border-[#d4b69c]/40">
+        <div key={filter} className="glass-card p-16 text-center border-2 border-dashed border-[#d4b69c]/40 animate-[fadeIn_0.4s_ease-out]">
           <Bot className="w-20 h-20 text-secondary/40 mx-auto mb-6" />
           <h3 className="text-2xl font-semibold text-primary mb-3">
             {filter === 'all' ? t('botList.empty') : `${t('botList.empty.filtered')} "${getStatusLabel(filter)}"`}
@@ -199,20 +202,18 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bots.map((bot) => (
+        <div key={filter} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bots.map((bot, index) => (
             <div
               key={bot.id}
-              className="card-hover"
+              className="card-hover animate-[fadeInUp_0.4s_ease-out_forwards]"
+              style={{ animationDelay: `${index * 0.05}s`, opacity: 0 }}
               onClick={() => onEditBot(bot)}
             >
               <div className="flex items-start gap-4 mb-5">
                 <div className="relative">
-                  <div className="w-14 h-14 bg-gradient-to-br from-[#c17b5c] to-[#8b5c4c] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#c17b5c]/30">
+                  <div className="w-14 h-14 flex items-center justify-center flex-shrink-0">
                     <Bot className="w-7 h-7 text-white" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1">
-                    {getStatusIcon(bot.status)}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
