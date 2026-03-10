@@ -3,6 +3,7 @@ import { Mic, MicOff, Phone, PhoneOff, Loader2 } from 'lucide-react';
 
 interface PipecatVoiceCallProps {
   flowId: string;
+  language: string;
   onEnd: () => void;
 }
 
@@ -13,7 +14,14 @@ interface Transcript {
   timestamp: Date;
 }
 
-export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEnd }) => {
+interface RequiredField {
+  name: string;
+  type: string;
+  label: { pl?: string; en?: string };
+  required: boolean;
+}
+
+export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, language, onEnd }) => {
   const [isConnecting, setIsConnecting] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false); // Start unmuted - mic active
@@ -21,6 +29,11 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
   const [recordingTimer, setRecordingTimer] = useState(0);
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
   const [error, setError] = useState('');
+  const [callEnded, setCallEnded] = useState(false);
+  const [satisfaction, setSatisfaction] = useState<number | null>(null);
+  const [collectedData, setCollectedData] = useState<Record<string, string>>({});
+  const [requiredFields, setRequiredFields] = useState<RequiredField[]>([]);
+  const [extractingData, setExtractingData] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -38,11 +51,26 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
     if (hasStartedRef.current) return;
     hasStartedRef.current = true;
 
+    fetchFlowConfig();
     startCall();
     return () => {
       cleanup();
     };
   }, []);
+
+  const fetchFlowConfig = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/flows/${flowId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const fields = data.data.required_fields || [];
+        setRequiredFields(fields);
+        console.log('[Voice] Required fields:', fields);
+      }
+    } catch (err) {
+      console.error('[Voice] Error fetching flow config:', err);
+    }
+  };
 
   useEffect(() => {
     transcriptsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -77,7 +105,7 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
       const sessionId = `session-${Date.now()}`;
 
       // Connect WebSocket with query parameters
-      const wsUrl = `ws://localhost:8080/ws/${sessionId}?flowId=${encodeURIComponent(flowId)}&language=en`;
+      const wsUrl = `ws://localhost:8080/ws/${sessionId}?flowId=${encodeURIComponent(flowId)}&language=${encodeURIComponent(language)}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -151,6 +179,15 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
             console.log('[Voice] Received JSON:', data);
             if (data.type === 'transcript') {
               addTranscript(data.speaker, data.text);
+
+              // Check if bot wants to end the call
+              if (data.shouldEndCall) {
+                console.log('[Voice] Bot signaled to end call');
+                setTimeout(async () => {
+                  await extractCollectedData();
+                  setCallEnded(true);
+                }, 2000);
+              }
             }
           } catch (e) {
             console.error('[Voice] Failed to parse message:', e);
@@ -217,6 +254,89 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
         timestamp: new Date(),
       }
     ]);
+  };
+
+  const extractCollectedData = async () => {
+    console.log('[Voice] Extracting data from conversation...');
+    setExtractingData(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/extract-data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          flowId,
+          messages: transcripts.map(t => ({
+            role: t.speaker === 'user' ? 'user' : 'assistant',
+            content: t.text,
+          })),
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const extractedData: Record<string, string> = {};
+
+        for (const [key, value] of Object.entries(result.data)) {
+          if (value !== null && value !== 'null') {
+            extractedData[key] = value as string;
+          }
+        }
+
+        setCollectedData(extractedData);
+        console.log('[Voice] Extracted data:', extractedData);
+      } else {
+        console.error('[Voice] Failed to extract data');
+        setCollectedData({});
+      }
+    } catch (err) {
+      console.error('[Voice] Error extracting data:', err);
+      setCollectedData({});
+    } finally {
+      setExtractingData(false);
+    }
+  };
+
+  const submitSatisfaction = async () => {
+    console.log('[Voice] Satisfaction rating:', satisfaction);
+
+    try {
+      const startTime = transcripts[0]?.timestamp?.getTime() || Date.now();
+      const endTime = transcripts[transcripts.length - 1]?.timestamp?.getTime() || Date.now();
+      const duration = Math.floor((endTime - startTime) / 1000);
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sessions/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          flowId,
+          language,
+          messages: transcripts.map(t => ({
+            role: t.speaker === 'user' ? 'user' : 'assistant',
+            content: t.text,
+            timestamp: t.timestamp
+          })),
+          collectedData,
+          satisfactionScore: satisfaction,
+          duration
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[Voice] Session saved:', data.sessionId);
+      } else {
+        console.error('[Voice] Failed to save session');
+      }
+    } catch (err) {
+      console.error('[Voice] Error saving session:', err);
+    }
+
+    onEnd();
   };
 
   const startRecording = () => {
@@ -316,6 +436,88 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
       audioContextRef.current = null;
     }
   };
+
+  // Show summary screen after call ends
+  if (callEnded) {
+    return (
+      <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100 items-center justify-center p-6">
+        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Call Summary</h2>
+
+          {/* Collected Data */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Collected Information</h3>
+
+            {extractingData ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-3" />
+                <span className="text-gray-600">Analyzing conversation and extracting data...</span>
+              </div>
+            ) : requiredFields.length > 0 ? (
+              <table className="w-full border border-gray-300 rounded-lg overflow-hidden">
+                <tbody>
+                  {requiredFields.map((field) => {
+                    const value = collectedData[field.name];
+                    const label = field.label.en || field.label.pl || field.name;
+                    const isRequired = field.required;
+
+                    return (
+                      <tr key={field.name} className="border-b border-gray-200">
+                        <td className="px-4 py-3 bg-gray-50 font-semibold text-gray-700 w-1/3">
+                          {label}
+                          {isRequired && <span className="text-red-500 ml-1">*</span>}
+                        </td>
+                        <td className={`px-4 py-3 ${value ? 'text-gray-900' : 'text-gray-400 italic'}`}>
+                          {value || '(None)'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No required fields configured</p>
+            )}
+          </div>
+
+          {/* Satisfaction Survey */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+              How satisfied are you with this call?
+            </h3>
+            <div className="flex justify-center gap-4 mb-6">
+              {[1, 2, 3, 4, 5].map((rating) => (
+                <button
+                  key={rating}
+                  onClick={() => setSatisfaction(rating)}
+                  className={`w-16 h-16 rounded-full text-2xl font-bold transition-all ${
+                    satisfaction === rating
+                      ? 'bg-blue-600 text-white scale-110 shadow-lg'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  }`}
+                >
+                  {rating}
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 px-8">
+              <span>Very Dissatisfied</span>
+              <span>Very Satisfied</span>
+            </div>
+          </div>
+
+          {/* Close Button */}
+          <button
+            onClick={submitSatisfaction}
+            disabled={satisfaction === null}
+            className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+          >
+            {satisfaction === null ? 'Please rate your experience' : 'Submit & Close'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100">

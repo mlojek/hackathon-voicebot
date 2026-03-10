@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import httpx
 import aiohttp
-from google import generativeai as genai
+from google import genai
 
 load_dotenv()
 
@@ -37,8 +37,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Configure Gemini client
+gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Store active sessions
 active_sessions: Dict[str, dict] = {}
@@ -105,16 +105,60 @@ async def transcribe_audio(audio_data: bytes, language: str) -> str:
         return ""
 
 
-async def generate_llm_response(chat, user_message: str) -> str:
-    """Generate response using Gemini"""
+async def generate_llm_response(client, model_name: str, system_prompt: str, history: list, user_message: str) -> tuple[str, bool]:
+    """Generate response using Gemini. Returns (response_text, should_end_call)"""
     try:
-        response = await asyncio.to_thread(chat.send_message, user_message)
+        # Build messages with history
+        messages = []
+        for msg in history:
+            messages.append(msg)
+        messages.append({"role": "user", "parts": [{"text": user_message}]})
+
+        response = await asyncio.to_thread(
+            client.models.generate_content,
+            model=model_name,
+            contents=messages,
+            config={
+                "system_instruction": system_prompt,
+            }
+        )
         llm_text = response.text
         logger.info(f"[LLM] Response: {llm_text}")
-        return llm_text
+
+        # Check if conversation should end (detect goodbye phrases)
+        should_end = await check_conversation_end(llm_text, user_message)
+
+        return llm_text, should_end
     except Exception as e:
         logger.error(f"[LLM] Error: {e}", exc_info=True)
-        return "I'm sorry, I encountered an error. Could you repeat that?"
+        return "I'm sorry, I encountered an error. Could you repeat that?", False
+
+
+async def check_conversation_end(bot_response: str, user_message: str) -> bool:
+    """Check if conversation should end based on bot response or user message"""
+    # Goodbye phrases in bot response
+    goodbye_phrases = [
+        "goodbye", "bye", "have a great day", "have a nice day", "take care",
+        "thank you for calling", "thanks for calling", "end of call",
+        "do widzenia", "dziękuję za telefon", "miłego dnia", "trzymaj się",
+        "koniec rozmowy", "dziękuję i do widzenia"
+    ]
+
+    bot_lower = bot_response.lower()
+    user_lower = user_message.lower()
+
+    # Check if bot is saying goodbye
+    for phrase in goodbye_phrases:
+        if phrase in bot_lower:
+            logger.info(f"[EndDetection] Found goodbye phrase in bot response: {phrase}")
+            return True
+
+    # Check if user is saying goodbye
+    if any(phrase in user_lower for phrase in goodbye_phrases):
+        logger.info(f"[EndDetection] User said goodbye")
+        return True
+
+    return False
 
 
 async def synthesize_speech(text: str) -> bytes:
@@ -188,19 +232,27 @@ async def websocket_endpoint(
 
     # Get flow configuration
     flow_config = await get_flow_config(flowId)
-    system_prompt = flow_config.get("data", {}).get("system_prompt", "You are a helpful AI assistant.")
+    base_system_prompt = flow_config.get("data", {}).get("system_prompt", "You are a helpful AI assistant.")
 
-    # Initialize Gemini chat
-    model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash-exp",
-        system_instruction=system_prompt
-    )
-    chat = model.start_chat(history=[])
+    # Add language instruction based on language parameter
+    language_instruction = ""
+    if language == "pl":
+        language_instruction = "\n\nIMPORTANT: You MUST speak ONLY in Polish language. Always respond in Polish, never in English."
+    elif language == "en":
+        language_instruction = "\n\nIMPORTANT: You MUST speak ONLY in English language. Always respond in English."
 
-    # Store session
+    system_prompt = base_system_prompt + language_instruction
+
+    # Model name from environment variable
+    model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+
+    # Store session with conversation history
+    conversation_history = []
     active_sessions[session_id] = {
-        "chat": chat,
+        "history": conversation_history,
         "language": language,
+        "model": model_name,
+        "system_prompt": system_prompt,
     }
 
     # Send initial greeting
@@ -256,13 +308,25 @@ async def websocket_endpoint(
                             })
 
                             # 2. Generate LLM response
-                            bot_response = await generate_llm_response(chat, transcript)
+                            session_data = active_sessions[session_id]
+                            bot_response, should_end_call = await generate_llm_response(
+                                gemini_client,
+                                session_data["model"],
+                                session_data["system_prompt"],
+                                session_data["history"],
+                                transcript
+                            )
+
+                            # Update conversation history
+                            session_data["history"].append({"role": "user", "parts": [{"text": transcript}]})
+                            session_data["history"].append({"role": "model", "parts": [{"text": bot_response}]})
 
                             # Send bot transcript to frontend
                             await websocket.send_json({
                                 "type": "transcript",
                                 "speaker": "bot",
                                 "text": bot_response,
+                                "shouldEndCall": should_end_call
                             })
 
                             # 3. Synthesize and send audio
