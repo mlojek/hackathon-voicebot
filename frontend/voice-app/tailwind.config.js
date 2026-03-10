@@ -7,14 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Notion-style grayscale palette
+        // Cream/warm palette (ui-inspo aesthetic)
         notion: {
-          bg: '#ffffff',
-          text: '#37352f',
-          textLight: '#787774',
-          border: '#e9e9e7',
-          hover: '#f7f6f3',
-          accent: '#2383e2',
+          bg: '#f0ede8',        // warm cream background
+          surface: '#faf8f5',   // slightly lighter surface for cards
+          text: '#1a1a1a',      // near-black
+          textLight: '#6b6869', // warm mid-gray
+          border: '#d4cfc8',    // warm light border
+          hover: '#e8e3dc',     // cream hover
+          accent: '#2383e2',    // blue for data/links
+        },
+        // Coral accent — main CTA color (PlayerZero-inspired)
+        coral: {
+          50: '#fff1ee',
+          100: '#fdddd5',
+          400: '#f07a5c',
+          500: '#e85d3a',
+          600: '#d44d2a',
+          700: '#b83d1e',
         },
         primary: {
           50: '#eff6ff',
@@ -31,6 +41,7 @@ export default {
       },
       fontFamily: {
         sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
     },
   },
