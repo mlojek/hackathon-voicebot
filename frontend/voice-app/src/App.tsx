@@ -18,6 +18,7 @@ function App() {
   const [transcript, setTranscript] = useState<Array<{ role: 'user' | 'assistant', text: string, timestamp: Date }>>([])
   const [collectedData, setCollectedData] = useState<CollectedData>({})
   const [showSurvey, setShowSurvey] = useState(false)
+  const [warningCount, setWarningCount] = useState(0)
 
   const {
     isConnected,
@@ -57,6 +58,8 @@ function App() {
     wsMessages.forEach((message) => {
       if (message.type === 'slot_update' && message.field && message.value) {
         setCollectedData((prev) => ({ ...prev, [message.field]: message.value }))
+      } else if (message.type === 'warning') {
+        setWarningCount((n) => n + 1)
       } else if (message.type === 'transcript') {
         setTranscript((prev) => [
           ...prev,
@@ -83,6 +86,7 @@ function App() {
       setSessionId(newSessionId)
       setTranscript([])
       setCollectedData({})
+      setWarningCount(0)
     } catch (error) {
       console.error('Failed to start session:', error)
       setSessionState('error')
@@ -181,6 +185,7 @@ function App() {
               onRetry={handleRetry}
               onToggleAudio={toggleAudio}
               onTimeout={handleTimeout}
+              warningCount={warningCount}
               language={language}
             />
 

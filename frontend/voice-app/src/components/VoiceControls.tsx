@@ -14,6 +14,7 @@ interface VoiceControlsProps {
   onRetry: () => void
   onToggleAudio: () => void
   onTimeout: () => void
+  warningCount: number
   language: Language
 }
 
@@ -28,6 +29,7 @@ export default function VoiceControls({
   onRetry,
   onToggleAudio,
   onTimeout,
+  warningCount,
   language,
 }: VoiceControlsProps) {
   const levels = useAudioAnalyser(audioStream)
@@ -64,6 +66,18 @@ export default function VoiceControls({
       <div className="mb-5 py-3 flex items-center justify-center border rounded" style={{ borderColor: '#e9e9e7' }}>
         <AudioVisualizer levels={levels} isActive={isActive} audioEnabled={audioEnabled} />
       </div>
+
+      {/* Abuse warning */}
+      {isActive && warningCount > 0 && (
+        <div className="mb-3 px-3 py-2 rounded border border-amber-300 bg-amber-50 flex items-center justify-between animate-fadeIn">
+          <span className="text-xs text-amber-700">
+            {language === 'en' ? 'Please stay on topic' : 'Proszę trzymać się tematu'}
+          </span>
+          <span className="font-mono text-xs font-semibold text-amber-700">
+            {warningCount}/3
+          </span>
+        </div>
+      )}
 
       {/* Controls */}
       <div className="space-y-3">

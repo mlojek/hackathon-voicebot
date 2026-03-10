@@ -40,8 +40,8 @@ Inspired by `ui-inspo/`:
 | Post-call satisfaction survey | ✅ Done | 5-star modal on completed, optional comment, posts to API |
 | End-of-call next steps | ✅ Done | Replaces guide card on completed, EN/PL, 4 OC-specific steps |
 | Error retry button | ⬜ Todo | Currently stuck on error state |
-| Session limit warning | ⬜ Todo | Alert at 9 min / terminate at 10 |
-| Abuse warning counter | ⬜ Todo | 3-strike display before termination |
+| Session limit warning | ✅ Done | Handled by SessionTimer (red at 9min, auto-stop at 10min) |
+| Abuse warning counter | ✅ Done | Amber banner X/3 in VoiceControls, fed by WS warning messages |
 
 ---
 
