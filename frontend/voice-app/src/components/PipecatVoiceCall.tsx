@@ -26,13 +26,15 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
   const audioWorkletRef = useRef<AudioWorkletNode | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const transcriptsEndRef = useRef<HTMLDivElement>(null);
-  const isMountedRef = useRef(true);
+  const hasStartedRef = useRef(false);
 
   useEffect(() => {
-    isMountedRef.current = true;
+    // Prevent double execution in React Strict Mode
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
+
     startCall();
     return () => {
-      isMountedRef.current = false;
       cleanup();
     };
   }, []);
@@ -77,13 +79,6 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
       ws.onopen = async () => {
         console.log('[Voice] WebSocket connected');
 
-        // Check if component is still mounted, WebSocket is active, and audio context is valid
-        if (!isMountedRef.current || wsRef.current !== ws || audioContext.state === 'closed') {
-          console.log('[Voice] Stale connection, ignoring');
-          ws.close();
-          return;
-        }
-
         // Send config
         ws.send(JSON.stringify({
           flowId: flowId,
@@ -99,7 +94,7 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
           audioWorkletRef.current = worklet;
 
           worklet.port.onmessage = (event) => {
-            if (!isMuted && ws.readyState === WebSocket.OPEN) {
+            if (!isMuted && ws && ws.readyState === WebSocket.OPEN) {
               ws.send(event.data);
             }
           };
@@ -113,7 +108,7 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
           processorRef.current = processor;
 
           processor.onaudioprocess = (e) => {
-            if (!isMuted && ws.readyState === WebSocket.OPEN) {
+            if (!isMuted && ws && ws.readyState === WebSocket.OPEN) {
               const audioData = e.inputBuffer.getChannelData(0);
               // Convert Float32Array to Int16Array
               const int16Data = new Int16Array(audioData.length);

@@ -127,15 +127,10 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         )
 
         # Initialize services
-        # Extract region from endpoint URL (e.g., https://eastus.api.cognitive.microsoft.com/)
-        endpoint_url = os.getenv("AZURE_OPENAI_API_ENDPOINT", "")
-        region = "eastus"  # default
-        if endpoint_url:
-            # Try to extract region from URL
-            import re
-            match = re.search(r'https://([^.]+)\.', endpoint_url)
-            if match:
-                region = match.group(1)
+        # Use region from environment variable
+        region = os.getenv("AZURE_OPENAI_REGION", "swedencentral")
+
+        logger.info(f"Using Azure region: {region}")
 
         stt = AzureSTTService(
             api_key=os.getenv("AZURE_OPENAI_API_KEY"),
