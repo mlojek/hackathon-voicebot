@@ -16,7 +16,9 @@ interface Transcript {
 export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEnd }) => {
   const [isConnecting, setIsConnecting] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(false); // Start unmuted - mic active
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTimer, setRecordingTimer] = useState(0);
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
   const [error, setError] = useState('');
 
@@ -27,6 +29,9 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const transcriptsEndRef = useRef<HTMLDivElement>(null);
   const hasStartedRef = useRef(false);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const recordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isRecordingRef = useRef(false);
 
   useEffect(() => {
     // Prevent double execution in React Strict Mode
@@ -71,19 +76,13 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
       // Create session ID
       const sessionId = `session-${Date.now()}`;
 
-      // Connect WebSocket
-      const wsUrl = `ws://localhost:8080/ws/${sessionId}`;
+      // Connect WebSocket with query parameters
+      const wsUrl = `ws://localhost:8080/ws/${sessionId}?flowId=${encodeURIComponent(flowId)}&language=en`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = async () => {
         console.log('[Voice] WebSocket connected');
-
-        // Send config
-        ws.send(JSON.stringify({
-          flowId: flowId,
-          language: 'en',
-        }));
 
         // Create audio processor
         try {
@@ -93,9 +92,14 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
           const worklet = new AudioWorkletNode(audioContext, 'audio-processor');
           audioWorkletRef.current = worklet;
 
+          let audioChunkCount = 0;
           worklet.port.onmessage = (event) => {
-            if (!isMuted && ws && ws.readyState === WebSocket.OPEN) {
+            if (isRecordingRef.current && !isMuted && ws && ws.readyState === WebSocket.OPEN) {
               ws.send(event.data);
+              audioChunkCount++;
+              if (audioChunkCount % 50 === 0) {
+                console.log(`[Voice] Sent ${audioChunkCount} audio chunks`);
+              }
             }
           };
 
@@ -107,8 +111,9 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
           const processor = audioContext.createScriptProcessor(4096, 1, 1);
           processorRef.current = processor;
 
+          let audioChunkCount = 0;
           processor.onaudioprocess = (e) => {
-            if (!isMuted && ws && ws.readyState === WebSocket.OPEN) {
+            if (isRecordingRef.current && !isMuted && ws && ws.readyState === WebSocket.OPEN) {
               const audioData = e.inputBuffer.getChannelData(0);
               // Convert Float32Array to Int16Array
               const int16Data = new Int16Array(audioData.length);
@@ -116,6 +121,10 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
                 int16Data[i] = Math.max(-32768, Math.min(32767, audioData[i] * 32768));
               }
               ws.send(int16Data.buffer);
+              audioChunkCount++;
+              if (audioChunkCount % 50 === 0) {
+                console.log(`[Voice] Sent ${audioChunkCount} audio chunks (ScriptProcessor)`);
+              }
             }
           };
           source.connect(processor);
@@ -210,6 +219,53 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
     ]);
   };
 
+  const startRecording = () => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+
+    console.log('[Voice] Starting 10s recording');
+    setIsRecording(true);
+    isRecordingRef.current = true;
+    setRecordingTimer(10);
+
+    // Countdown timer
+    recordingIntervalRef.current = setInterval(() => {
+      setRecordingTimer(prev => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Auto-stop after 10 seconds
+    recordingTimeoutRef.current = setTimeout(() => {
+      stopRecording();
+    }, 10000);
+  };
+
+  const stopRecording = () => {
+    console.log('[Voice] Stopping recording');
+    setIsRecording(false);
+    isRecordingRef.current = false;
+    setRecordingTimer(0);
+
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current);
+      recordingIntervalRef.current = null;
+    }
+
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+
+    // Send audio_end signal
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'audio_end' }));
+      console.log('[Voice] Sent audio_end signal');
+    }
+  };
+
   const toggleMute = () => {
     setIsMuted(!isMuted);
     if (mediaStreamRef.current) {
@@ -225,6 +281,12 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
   };
 
   const cleanup = () => {
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current);
+    }
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+    }
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
@@ -268,15 +330,34 @@ export const PipecatVoiceCall: React.FC<PipecatVoiceCallProps> = ({ flowId, onEn
 
         <div className="flex gap-2">
           <button
+            onClick={isRecording ? stopRecording : startRecording}
+            disabled={!isConnected || isMuted}
+            className={`p-4 rounded-full transition-all font-semibold ${
+              isRecording
+                ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
+                : 'bg-blue-500 hover:bg-blue-600 text-white'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {isRecording ? (
+              <div className="flex items-center gap-2">
+                <Mic size={24} />
+                <span>{recordingTimer}s</span>
+              </div>
+            ) : (
+              <Mic size={24} />
+            )}
+          </button>
+
+          <button
             onClick={toggleMute}
             disabled={!isConnected}
             className={`p-3 rounded-full transition-all ${
               isMuted
-                ? 'bg-red-500 hover:bg-red-600 text-white'
+                ? 'bg-gray-500 text-white'
                 : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
+            {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
           </button>
 
           <button
