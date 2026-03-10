@@ -254,6 +254,33 @@
 /* React Flow overrides for premium theme */
 .react-flow__node {
   @apply shadow-premium;
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.react-flow__node > div {
+  background: transparent !important;
+}
+
+.react-flow__node * {
+  color: white !important;
+}
+
+.react-flow__node .text-white\/70 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.react-flow__node .text-white\/60 {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.react-flow__node .text-white\/50 {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.react-flow__node .text-white\/40 {
+  color: rgba(255, 255, 255, 0.4) !important;
 }
 
 .react-flow__edge-path {

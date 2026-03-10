@@ -51,18 +51,24 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
   };
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900">Node Properties</h3>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-          <X className="w-5 h-5" />
+    <div className="w-80 bg-white/[0.04] backdrop-blur-xl border-l border-white/[0.08] p-6 overflow-y-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+          <h3 className="font-semibold text-white tracking-tight">Node Properties</h3>
+        </div>
+        <button
+          onClick={onClose}
+          className="w-8 h-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-all duration-200 flex items-center justify-center"
+        >
+          <X className="w-4 h-4" />
         </button>
       </div>
 
       <div className="space-y-4">
         {/* Label */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
             Label
           </label>
           <input
@@ -76,7 +82,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
         {/* Type-specific fields */}
         {(node.type === 'start' || node.type === 'message' || node.type === 'end') && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
               Message
             </label>
             <textarea
@@ -92,7 +98,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
         {node.type === 'slotCollection' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Prompt
               </label>
               <textarea
@@ -104,7 +110,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Slots to Collect
               </label>
               <div className="space-y-2">
@@ -140,7 +146,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
         {node.type === 'validation' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Field to Validate
               </label>
               <input
@@ -152,7 +158,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Validation Rules
               </label>
               <div className="space-y-2">
@@ -187,7 +193,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
 
         {node.type === 'confirmation' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
               Confirmation Message
             </label>
             <textarea
@@ -203,7 +209,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
         {node.type === 'escalation' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Escalation Reason
               </label>
               <textarea
@@ -215,7 +221,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Transfer To
               </label>
               <input
@@ -232,7 +238,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
         {node.type === 'fieldGroup' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Description
               </label>
               <textarea
@@ -244,7 +250,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Fields to Collect
               </label>
               <div className="space-y-2">
@@ -280,7 +286,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
         {node.type === 'branch' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Description
               </label>
               <textarea
@@ -292,7 +298,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Detection Field
               </label>
               <input
@@ -304,12 +310,12 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">
                 Branches ({(formData.branches || []).length})
               </label>
               <div className="space-y-3">
                 {(formData.branches || []).map((branch: any, index: number) => (
-                  <div key={index} className="p-3 border border-gray-200 rounded-lg space-y-2">
+                  <div key={index} className="p-3 border border-white/[0.08] bg-white/[0.02] rounded-lg space-y-2">
                     <div className="flex items-center justify-between">
                       <input
                         type="text"
@@ -324,9 +330,9 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
                       />
                       <button
                         onClick={() => handleRemoveArrayItem('branches', index)}
-                        className="ml-2 text-red-500 hover:text-red-700"
+                        className="ml-2 w-8 h-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white transition-all duration-200 flex items-center justify-center"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                     <textarea
@@ -358,7 +364,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
                       className="input text-sm"
                       placeholder="Keywords (separated by |)"
                     />
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-white/50">
                       {branch.required_fields?.length || 0} required field(s)
                     </div>
                   </div>
@@ -386,7 +392,7 @@ export const Inspector: React.FC<InspectorProps> = ({ node, onClose }) => {
         )}
 
         {/* Delete button */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-6 mt-6 border-t border-white/[0.08]">
           <button
             onClick={handleDelete}
             className="btn btn-danger w-full flex items-center justify-center gap-2"

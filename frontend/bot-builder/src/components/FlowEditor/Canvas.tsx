@@ -8,6 +8,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import '@/styles/globals.css';
 import { useFlowState } from '@/hooks/useFlowState';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { nodeTypes } from './NodeTypes';
