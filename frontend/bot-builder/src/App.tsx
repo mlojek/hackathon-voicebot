@@ -216,12 +216,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-white border-b border-border-light sticky top-0 z-50 shadow-sm">
+      <header className="bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {view === 'list' ? (
-                <h1 className="text-xl font-bold text-ink">{t('header.botBuilder')}</h1>
+                <h1 className="text-xl font-bold text-ink">super kitties</h1>
               ) : (
                 <>
                   <input
