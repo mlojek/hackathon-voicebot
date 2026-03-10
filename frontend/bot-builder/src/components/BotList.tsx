@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Bot, Clock, CheckCircle, Archive, FileText, Trash2, Edit2 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface Flow {
   id: string;
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
+  const { t } = useLanguage();
   const [bots, setBots] = useState<Flow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -61,7 +63,7 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Czy na pewno chcesz usunąć bota "${name}"?`)) {
+    if (!confirm(`${t('botList.delete.confirm')} "${name}"?`)) {
       return;
     }
 
@@ -72,12 +74,12 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || 'Nie udało się usunąć bota');
+        throw new Error(errorData?.message || 'Failed to delete bot');
       }
 
       fetchBots();
     } catch (err: any) {
-      alert(err.message || 'Błąd podczas usuwania');
+      alert(err.message || 'Error deleting');
     }
   };
 
@@ -97,11 +99,11 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'published':
-        return 'Opublikowany';
+        return t('botList.filter.published');
       case 'draft':
-        return 'Szkic';
+        return t('botList.filter.draft');
       case 'archived':
-        return 'Zarchiwizowany';
+        return t('botList.filter.archived');
       default:
         return status;
     }
@@ -123,7 +125,7 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ink mx-auto mb-4"></div>
-          <p className="text-ink-medium">Ładowanie...</p>
+          <p className="text-ink-medium">{t('botList.loading')}</p>
         </div>
       </div>
     );
@@ -137,7 +139,7 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
           onClick={fetchBots}
           className="mt-4 px-4 py-2 bg-danger text-white rounded-lg hover:opacity-90"
         >
-          Spróbuj ponownie
+          {t('botList.error.retry')}
         </button>
       </div>
     );
@@ -148,9 +150,9 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-ink">Moje Voiceboty</h1>
+          <h1 className="text-3xl font-bold text-ink">{t('botList.title')}</h1>
           <p className="text-ink-medium mt-1">
-            Zarządzaj wszystkimi swoimi botami głosowymi w jednym miejscu
+            {t('botList.subtitle')}
           </p>
         </div>
         <button
@@ -158,7 +160,7 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
           className="flex items-center gap-2 px-5 py-3 bg-ink text-white rounded-lg hover:opacity-80 transition font-medium"
         >
           <Plus className="w-5 h-5" />
-          Utwórz nowego bota
+          {t('botList.createNew')}
         </button>
       </div>
 
@@ -174,7 +176,7 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
                 : 'bg-white border border-border-light text-ink hover:bg-cream'
             }`}
           >
-            {f === 'all' ? 'Wszystkie' : getStatusLabel(f)}
+            {f === 'all' ? t('botList.filter.all') : getStatusLabel(f)}
           </button>
         ))}
       </div>
@@ -184,16 +186,16 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
         <div className="bg-white rounded-xl border-2 border-dashed border-border-light p-12 text-center">
           <Bot className="w-16 h-16 text-ink-light mx-auto mb-4" />
           <h3 className="text-xl font-medium text-ink mb-2">
-            {filter === 'all' ? 'Nie masz jeszcze żadnych botów' : `Brak botów w statusie "${getStatusLabel(filter)}"`}
+            {filter === 'all' ? t('botList.empty') : `${t('botList.empty.filtered')} "${getStatusLabel(filter)}"`}
           </h3>
           <p className="text-ink-medium mb-6">
-            Zacznij od stworzenia swojego pierwszego voicebota
+            {t('botList.empty.cta')}
           </p>
           <button
             onClick={onCreateNew}
             className="px-6 py-3 bg-ink text-white rounded-lg hover:opacity-80 transition font-medium"
           >
-            Utwórz pierwszego bota
+            {t('botList.createFirst')}
           </button>
         </div>
       ) : (
@@ -225,11 +227,11 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2 text-sm text-ink-light">
                   <FileText className="w-4 h-4" />
-                  <span>{bot.required_fields.length} pól</span>
+                  <span>{bot.required_fields.length} {t('botList.fields')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-ink-light">
                   <Clock className="w-4 h-4" />
-                  <span>Zaktualizowano {formatDate(bot.updated_at)}</span>
+                  <span>{t('botList.updated')} {formatDate(bot.updated_at)}</span>
                 </div>
               </div>
 
@@ -239,7 +241,7 @@ export const BotList: React.FC<Props> = ({ onCreateNew, onEditBot }) => {
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink-medium transition text-sm"
                 >
                   <Edit2 className="w-4 h-4" />
-                  Edytuj
+                  {t('botList.edit')}
                 </button>
                 <button
                   onClick={(e) => {

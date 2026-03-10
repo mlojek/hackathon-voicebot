@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Loader2, Sparkles, CheckCircle2, RefreshCw } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface GeneratedConfig {
   prompt: string;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConfig }) => {
+  const { t, language: uiLanguage } = useLanguage();
   const [description, setDescription] = useState('');
   const [refinement, setRefinement] = useState('');
   const [language, setLanguage] = useState<'pl' | 'en'>('pl');
@@ -105,12 +107,12 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-ink mb-3">
-          {currentConfig ? 'Udoskonalaj swojego bota' : 'Stwórz voicebota'}
+          {currentConfig ? t('creator.title.refine') : t('creator.title.create')}
         </h1>
         <p className="text-lg text-ink-medium">
           {currentConfig
-            ? 'Powiedz co chcesz zmienić, a AI zaktualizuje konfigurację'
-            : 'Opisz czym ma się zajmować Twój voicebot, a AI wygeneruje wszystko za Ciebie'
+            ? t('creator.subtitle.refine')
+            : t('creator.subtitle.create')
           }
         </p>
       </div>
@@ -126,7 +128,7 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
                 : 'text-ink-medium hover:text-ink'
             }`}
           >
-            Polski
+            {t('creator.language.pl')}
           </button>
           <button
             onClick={() => setLanguage('en')}
@@ -136,7 +138,7 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
                 : 'text-ink-medium hover:text-ink'
             }`}
           >
-            English
+            {t('creator.language.en')}
           </button>
         </div>
       </div>
@@ -146,17 +148,17 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
         <>
           <div className="card rounded-xl p-8 mb-8">
             <label className="block text-sm font-semibold text-ink mb-3">
-              Opisz swojego voicebota
+              {t('creator.label.describe')}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Przykład: Chcę bota który zbiera informacje o szkodzie komunikacyjnej. Powinien zapytać o datę zdarzenia, numer rejestracyjny pojazdu sprawcy, dane zgłaszającego i opis zdarzenia. Bot powinien być empatyczny ale rzeczowy."
+              placeholder={t('creator.placeholder')}
               className="input min-h-[200px] text-base"
               disabled={isGenerating}
             />
             <div className="mt-3 text-sm text-ink-light">
-              Bądź konkretny: jakie informacje ma zbierać, jaki ma być ton, jakie specjalne wymagania
+              {t('creator.hint')}
             </div>
           </div>
 
@@ -175,12 +177,12 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
               {isGenerating ? (
                 <span className="flex items-center gap-3">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  AI generuje konfigurację...
+                  {t('creator.generating')}
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5" />
-                  Wygeneruj bota
+                  {t('creator.generate')}
                 </span>
               )}
             </button>
@@ -189,7 +191,7 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
           {/* Examples */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-ink mb-4">
-              Przykłady - kliknij aby użyć
+              {t('creator.examples.title')}
             </h3>
             <div className="grid gap-4">
               {examples.map((example, idx) => (
@@ -204,7 +206,7 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
                       <p className="text-sm text-ink-medium line-clamp-2">{example.text}</p>
                     </div>
                     <button className="text-xs text-ink hover:opacity-70 font-medium ml-4">
-                      Użyj →
+                      {t('creator.examples.use')}
                     </button>
                   </div>
                 </div>
@@ -219,9 +221,9 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
           <div className="card rounded-xl p-5 flex items-start gap-3 border-success bg-cream">
             <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-ink mb-1">Bot został wygenerowany!</h3>
+              <h3 className="font-semibold text-ink mb-1">{t('creator.success')}</h3>
               <p className="text-sm text-ink-medium">
-                Przejdź do zakładek powyżej aby zobaczyć szczegóły (Prompt, Pola, Flow) lub opisz poniżej co chcesz zmienić.
+                {t('creator.success.hint')}
               </p>
             </div>
           </div>
@@ -229,17 +231,17 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
           {/* Refinement input */}
           <div className="card rounded-xl p-8">
             <label className="block text-sm font-semibold text-ink mb-3">
-              Co chcesz zmienić?
+              {t('creator.refine.label')}
             </label>
             <textarea
               value={refinement}
               onChange={(e) => setRefinement(e.target.value)}
-              placeholder="Przykład: Dodaj pole 'Numer VIN pojazdu', usuń pole 'Adres email', zmień ton na bardziej formalny, pole z numerem telefonu powinno być opcjonalne"
+              placeholder={t('creator.refine.placeholder')}
               className="input min-h-[150px] text-base"
               disabled={isGenerating}
             />
             <div className="mt-3 text-sm text-ink-light">
-              Opisz zmiany naturalnym językiem. AI zaktualizuje konfigurację.
+              {t('creator.refine.hint')}
             </div>
           </div>
 
@@ -258,12 +260,12 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
               {isGenerating ? (
                 <span className="flex items-center gap-3">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Aktualizuję...
+                  {t('creator.refine.updating')}
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
                   <RefreshCw className="w-5 h-5" />
-                  Zaktualizuj bota
+                  {t('creator.refine.update')}
                 </span>
               )}
             </button>
@@ -272,7 +274,7 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
           {/* History */}
           {history.length > 0 && (
             <div className="card rounded-xl p-6">
-              <h3 className="text-sm font-semibold text-ink mb-3">Historia zmian</h3>
+              <h3 className="text-sm font-semibold text-ink mb-3">{t('creator.history')}</h3>
               <div className="space-y-2">
                 {history.map((item, idx) => (
                   <div key={idx} className="text-sm text-ink-medium pl-3 border-l-2 border-border-light">

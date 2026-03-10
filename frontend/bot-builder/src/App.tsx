@@ -4,6 +4,8 @@ import FlowEditor from './components/FlowEditor';
 import TestConsole from './components/TestConsole-simple';
 import VersionHistory from './components/VersionHistory-simple';
 import BotList from './components/BotList';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { useLanguage } from './i18n/LanguageContext';
 import { Save, Eye, EyeOff, ArrowLeft, List } from 'lucide-react';
 
 interface Flow {
@@ -45,6 +47,7 @@ interface SavedBot {
 }
 
 function App() {
+  const { t } = useLanguage();
   const [view, setView] = useState<View>('list');
   const [activeTab, setActiveTab] = useState<Tab>('create');
   const [config, setConfig] = useState<GeneratedConfig | null>(null);
@@ -90,7 +93,7 @@ function App() {
   };
 
   const handleBackToList = () => {
-    if (hasUnsavedChanges && !window.confirm('Masz niezapisane zmiany. Czy na pewno chcesz wrócić?')) {
+    if (hasUnsavedChanges && !window.confirm(t('common.unsavedChanges'))) {
       return;
     }
     setView('list');
@@ -136,10 +139,10 @@ function App() {
       }
 
       setHasUnsavedChanges(false);
-      alert(currentBotId ? 'Bot zaktualizowany!' : 'Bot zapisany!');
+      alert(currentBotId ? t('common.updated') : t('common.saved'));
     } catch (error: any) {
       console.error('[BOT-SAVE] Error:', error);
-      alert('Błąd zapisu: ' + error.message);
+      alert('Error: ' + error.message);
     }
   };
 
@@ -152,11 +155,11 @@ function App() {
     }
 
     if (!currentBotId) {
-      alert('Najpierw zapisz bota');
+      alert(t('common.saveFirst'));
       return;
     }
 
-    if (!window.confirm('Opublikować bota? Stanie się on dostępny dla użytkowników.')) return;
+    if (!window.confirm(t('common.publishConfirm'))) return;
 
     try {
       console.log('[BOT-PUBLISH] Publishing...', currentBotId);
@@ -172,10 +175,10 @@ function App() {
       }
 
       console.log('[BOT-PUBLISH] Published successfully');
-      alert('Bot opublikowany!');
+      alert(t('common.published'));
     } catch (error: any) {
       console.error('[BOT-PUBLISH] Error:', error);
-      alert('Błąd publikacji: ' + error.message);
+      alert('Error: ' + error.message);
     }
   };
 
@@ -201,13 +204,13 @@ function App() {
   };
 
   const tabs = [
-    { id: 'create', label: 'Konwersacja', desc: 'Opisz lub zmień' },
+    { id: 'create', label: t('tabs.conversation'), desc: t('tabs.conversation.desc') },
     ...(showAdvanced ? [
-      { id: 'prompt', label: 'Prompt', desc: 'System prompt' },
-      { id: 'fields', label: 'Pola', desc: 'Dane' },
-      { id: 'flow', label: 'Flow', desc: 'Kolejność' },
-      { id: 'test', label: 'Test', desc: 'Wypróbuj' },
-      { id: 'versions', label: 'Wersje', desc: 'Historia' },
+      { id: 'prompt', label: t('tabs.prompt'), desc: t('tabs.prompt.desc') },
+      { id: 'fields', label: t('tabs.fields'), desc: t('tabs.fields.desc') },
+      { id: 'flow', label: t('tabs.flow'), desc: t('tabs.flow.desc') },
+      { id: 'test', label: t('tabs.test'), desc: t('tabs.test.desc') },
+      { id: 'versions', label: t('tabs.versions'), desc: t('tabs.versions.desc') },
     ] : []) as Array<{ id: Tab; label: string; desc: string }>,
   ];
 
@@ -218,7 +221,7 @@ function App() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {view === 'list' ? (
-                <h1 className="text-xl font-bold text-ink">Bot Builder</h1>
+                <h1 className="text-xl font-bold text-ink">{t('header.botBuilder')}</h1>
               ) : (
                 <>
                   <input
@@ -231,20 +234,22 @@ function App() {
                     className="text-xl font-bold text-ink bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue rounded px-2"
                   />
                   {hasUnsavedChanges && (
-                    <span className="text-sm text-warning">• Niezapisane</span>
+                    <span className="text-sm text-warning">• {t('header.unsaved')}</span>
                   )}
                 </>
               )}
             </div>
             <div className="flex gap-3">
+              {view === 'list' && <LanguageSwitcher />}
               {view === 'editor' && (
                 <>
+                  <LanguageSwitcher />
                   <button
                     onClick={handleBackToList}
                     className="flex items-center gap-2 px-4 py-2 text-sm border border-border-light text-ink rounded-lg hover:bg-cream"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                    Lista botów
+                    {t('header.backToList')}
                   </button>
               {config && (
                 <button
@@ -252,7 +257,7 @@ function App() {
                   className="flex items-center gap-2 px-4 py-2 text-sm border border-border-light text-ink rounded-lg hover:bg-cream"
                 >
                   {showAdvanced ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  {showAdvanced ? 'Ukryj' : 'Pokaż'} zaawansowane
+                  {showAdvanced ? t('header.hideAdvanced') : t('header.showAdvanced')}
                 </button>
               )}
               <button
@@ -261,14 +266,14 @@ function App() {
                 className="flex items-center gap-2 px-5 py-2 text-sm border border-border-light text-ink rounded-lg hover:bg-cream disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
-                Zapisz
+                {t('header.save')}
               </button>
               <button
                 onClick={handlePublish}
                 disabled={!config}
                 className="px-5 py-2 text-sm text-white bg-ink rounded-lg hover:opacity-80 disabled:opacity-50 font-medium"
               >
-                Opublikuj
+                {t('header.publish')}
               </button>
                 </>
               )}
@@ -313,7 +318,7 @@ function App() {
               )}
           {activeTab === 'prompt' && config && (
             <div className="card p-6">
-              <h2 className="text-h2 mb-4">System Prompt</h2>
+              <h2 className="text-h2 mb-4">{t('prompt.title')}</h2>
               <textarea
                 value={config.prompt}
                 onChange={(e) => updatePrompt(e.target.value)}
@@ -323,7 +328,7 @@ function App() {
           )}
           {activeTab === 'fields' && config && (
             <div className="card p-6">
-              <h2 className="text-h2 mb-4">Required Fields</h2>
+              <h2 className="text-h2 mb-4">{t('fields.title')}</h2>
               <div className="space-y-4">
                 {config.fields.map((field, idx) => {
                   // Handle translation objects - extract the string value
@@ -348,7 +353,7 @@ function App() {
                           </p>
                           {field.required && (
                             <span className="inline-block mt-2 text-xs font-medium text-white bg-ink px-2 py-1 rounded">
-                              * Wymagane
+                              {t('fields.required')}
                             </span>
                           )}
                           {field.promptTemplate && (
@@ -358,11 +363,11 @@ function App() {
                           )}
                           {field.validation && Object.keys(field.validation).length > 0 && (
                             <div className="mt-3 text-xs text-ink-light space-y-1">
-                              <p className="font-medium">Walidacja:</p>
-                              {field.validation.min && <p>Min: {field.validation.min}</p>}
-                              {field.validation.max && <p>Max: {field.validation.max}</p>}
-                              {field.validation.pattern && <p>Pattern: <code className="bg-cream px-1 rounded">{field.validation.pattern}</code></p>}
-                              {field.validation.errorMessage && <p>Error: {getDisplayValue(field.validation.errorMessage)}</p>}
+                              <p className="font-medium">{t('fields.validation')}</p>
+                              {field.validation.min && <p>{t('fields.validation.min')} {field.validation.min}</p>}
+                              {field.validation.max && <p>{t('fields.validation.max')} {field.validation.max}</p>}
+                              {field.validation.pattern && <p>{t('fields.validation.pattern')} <code className="bg-cream px-1 rounded">{field.validation.pattern}</code></p>}
+                              {field.validation.errorMessage && <p>{t('fields.validation.error')} {getDisplayValue(field.validation.errorMessage)}</p>}
                             </div>
                           )}
                         </div>
