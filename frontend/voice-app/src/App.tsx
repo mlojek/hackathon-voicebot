@@ -21,6 +21,7 @@ function App() {
     connect,
     disconnect,
     audioEnabled,
+    audioStream,
     toggleAudio,
   } = useLiveKit()
 
@@ -143,6 +144,7 @@ function App() {
               sessionState={sessionState}
               isConnected={isConnected}
               audioEnabled={audioEnabled}
+              audioStream={audioStream}
               onStart={handleStartSession}
               onStop={handleStopSession}
               onEscalate={handleEscalate}

@@ -1,9 +1,12 @@
 import { Language, SessionState } from '../App'
+import AudioVisualizer from './AudioVisualizer'
+import { useAudioAnalyser } from '../hooks/useAudioAnalyser'
 
 interface VoiceControlsProps {
   sessionState: SessionState
   isConnected: boolean
   audioEnabled: boolean
+  audioStream: MediaStream | null
   onStart: () => void
   onStop: () => void
   onEscalate: () => void
@@ -16,6 +19,7 @@ export default function VoiceControls({
   sessionState,
   isConnected,
   audioEnabled,
+  audioStream,
   onStart,
   onStop,
   onEscalate,
@@ -23,6 +27,7 @@ export default function VoiceControls({
   onToggleAudio,
   language,
 }: VoiceControlsProps) {
+  const levels = useAudioAnalyser(audioStream)
   const isActive = sessionState === 'active' || sessionState === 'escalated'
   const isEscalated = sessionState === 'escalated'
   const isConnecting = sessionState === 'connecting'
@@ -45,6 +50,11 @@ export default function VoiceControls({
       <div className="flex items-center justify-between mb-6">
         <span className="font-mono text-xs text-notion-textLight uppercase tracking-widest">Status</span>
         <span className="font-mono text-xs text-notion-text">{statusText[sessionState]}</span>
+      </div>
+
+      {/* Visualizer */}
+      <div className="mb-5 py-3 flex items-center justify-center border rounded" style={{ borderColor: '#e9e9e7' }}>
+        <AudioVisualizer levels={levels} isActive={isActive} audioEnabled={audioEnabled} />
       </div>
 
       {/* Controls */}
