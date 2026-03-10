@@ -87,6 +87,7 @@ services:
       - ./frontend/bot-builder/public:/app/public
       - ./frontend/bot-builder/index.html:/app/index.html
       - ./frontend/bot-builder/vite.config.ts:/app/vite.config.ts
+      - ./frontend/bot-builder/tailwind.config.js:/app/tailwind.config.js
       - ./frontend/bot-builder/.env:/app/.env
     networks:
       - callcenter-network

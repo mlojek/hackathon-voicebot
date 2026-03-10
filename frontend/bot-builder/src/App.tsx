@@ -200,27 +200,24 @@ function App() {
   };
 
   const tabs = [
-    { id: 'create', label: '💬 Konwersacja', desc: 'Opisz lub zmień' },
+    { id: 'create', label: 'Konwersacja', desc: 'Opisz lub zmień' },
     ...(showAdvanced ? [
-      { id: 'prompt', label: '✍️ Prompt', desc: 'System prompt' },
-      { id: 'fields', label: '📝 Pola', desc: 'Dane' },
-      { id: 'flow', label: '📊 Flow', desc: 'Kolejność' },
-      { id: 'test', label: '🧪 Test', desc: 'Wypróbuj' },
-      { id: 'versions', label: '📜 Wersje', desc: 'Historia' },
+      { id: 'prompt', label: 'Prompt', desc: 'System prompt' },
+      { id: 'fields', label: 'Pola', desc: 'Dane' },
+      { id: 'flow', label: 'Flow', desc: 'Kolejność' },
+      { id: 'test', label: 'Test', desc: 'Wypróbuj' },
+      { id: 'versions', label: 'Wersje', desc: 'Historia' },
     ] : []) as Array<{ id: Tab; label: string; desc: string }>,
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-white flex flex-col">
+      <header className="bg-white border-b border-border-light sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">V</span>
-              </div>
               {view === 'list' ? (
-                <h1 className="text-xl font-bold text-gray-900">Bot Builder</h1>
+                <h1 className="text-xl font-bold text-ink">Bot Builder</h1>
               ) : (
                 <>
                   <input
@@ -230,10 +227,10 @@ function App() {
                       setBotName(e.target.value);
                       setHasUnsavedChanges(true);
                     }}
-                    className="text-xl font-bold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2"
+                    className="text-xl font-bold text-ink bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue rounded px-2"
                   />
                   {hasUnsavedChanges && (
-                    <span className="text-sm text-orange-600">• Niezapisane</span>
+                    <span className="text-sm text-warning">• Niezapisane</span>
                   )}
                 </>
               )}
@@ -243,7 +240,7 @@ function App() {
                 <>
                   <button
                     onClick={handleBackToList}
-                    className="flex items-center gap-2 px-4 py-2 text-sm border rounded-lg hover:bg-gray-50"
+                    className="flex items-center gap-2 px-4 py-2 text-sm border border-border-light text-ink rounded-lg hover:bg-cream"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Lista botów
@@ -251,7 +248,7 @@ function App() {
               {config && (
                 <button
                   onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm border rounded-lg hover:bg-gray-50"
+                  className="flex items-center gap-2 px-4 py-2 text-sm border border-border-light text-ink rounded-lg hover:bg-cream"
                 >
                   {showAdvanced ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   {showAdvanced ? 'Ukryj' : 'Pokaż'} zaawansowane
@@ -260,7 +257,7 @@ function App() {
               <button
                 onClick={handleSave}
                 disabled={!config || !hasUnsavedChanges}
-                className="flex items-center gap-2 px-5 py-2 text-sm border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 text-sm border border-border-light text-ink rounded-lg hover:bg-cream disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 Zapisz
@@ -268,7 +265,7 @@ function App() {
               <button
                 onClick={handlePublish}
                 disabled={!config}
-                className="px-5 py-2 text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:shadow-lg disabled:opacity-50"
+                className="px-5 py-2 text-sm text-white bg-primary rounded-lg hover:opacity-90 disabled:opacity-50"
               >
                 Opublikuj
               </button>
@@ -280,7 +277,7 @@ function App() {
       </header>
 
       {showAdvanced && (
-        <div className="bg-white border-b sticky top-[73px] z-40">
+        <div className="bg-white border-b border-border-light sticky top-[73px] z-40">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex gap-1">
               {tabs.map((tab) => (
@@ -289,8 +286,8 @@ function App() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-5 py-3 text-sm font-medium border-b-2 ${
                     activeTab === tab.id
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-600'
+                      ? 'border-ink text-ink'
+                      : 'border-transparent text-ink-medium hover:text-ink'
                   }`}
                 >
                   <div>
@@ -314,18 +311,18 @@ function App() {
                 <ConversationalCreator onGenerate={handleGenerate} currentConfig={config || undefined} />
               )}
           {activeTab === 'prompt' && config && (
-            <div className="bg-white rounded-xl p-6 border">
-              <h2 className="text-xl font-bold mb-4">System Prompt</h2>
+            <div className="card p-6">
+              <h2 className="text-h2 mb-4">System Prompt</h2>
               <textarea
                 value={config.prompt}
                 onChange={(e) => updatePrompt(e.target.value)}
-                className="w-full min-h-[500px] px-4 py-3 border rounded-lg font-mono text-sm"
+                className="input min-h-[500px] font-mono"
               />
             </div>
           )}
           {activeTab === 'fields' && config && (
-            <div className="bg-white rounded-xl p-6 border">
-              <h2 className="text-xl font-bold mb-4">Required Fields</h2>
+            <div className="card p-6">
+              <h2 className="text-h2 mb-4">Required Fields</h2>
               <div className="space-y-4">
                 {config.fields.map((field, idx) => {
                   // Handle translation objects - extract the string value
@@ -339,31 +336,31 @@ function App() {
                   };
 
                   return (
-                    <div key={idx} className="p-4 border rounded-lg">
+                    <div key={idx} className="card p-4">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">{getDisplayValue(field.label)}</h3>
-                          <p className="text-sm text-gray-500 mt-1">
+                          <h3 className="font-medium text-ink">{getDisplayValue(field.label)}</h3>
+                          <p className="text-sm text-ink-light mt-1">
                             <span className="font-mono">{getDisplayValue(field.name)}</span>
                             <span className="mx-2">•</span>
                             <span>{getDisplayValue(field.type)}</span>
                           </p>
                           {field.required && (
-                            <span className="inline-block mt-2 text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded">
+                            <span className="inline-block mt-2 text-xs font-medium text-white bg-ink px-2 py-1 rounded">
                               * Wymagane
                             </span>
                           )}
                           {field.promptTemplate && (
-                            <p className="text-sm text-gray-600 mt-2 italic">
+                            <p className="text-sm text-ink-medium mt-2 italic">
                               "{getDisplayValue(field.promptTemplate)}"
                             </p>
                           )}
                           {field.validation && Object.keys(field.validation).length > 0 && (
-                            <div className="mt-3 text-xs text-gray-500 space-y-1">
+                            <div className="mt-3 text-xs text-ink-light space-y-1">
                               <p className="font-medium">Walidacja:</p>
                               {field.validation.min && <p>Min: {field.validation.min}</p>}
                               {field.validation.max && <p>Max: {field.validation.max}</p>}
-                              {field.validation.pattern && <p>Pattern: <code className="bg-gray-100 px-1 rounded">{field.validation.pattern}</code></p>}
+                              {field.validation.pattern && <p>Pattern: <code className="bg-cream px-1 rounded">{field.validation.pattern}</code></p>}
                               {field.validation.errorMessage && <p>Error: {getDisplayValue(field.validation.errorMessage)}</p>}
                             </div>
                           )}

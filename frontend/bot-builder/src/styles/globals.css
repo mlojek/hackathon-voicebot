@@ -4,61 +4,100 @@
 
 @layer base {
   body {
-    @apply bg-white text-notion-text;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    @apply bg-cream text-ink font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: 14px;
     line-height: 1.5;
   }
+
+  /* Headings */
+  h1 {
+    @apply text-h1 text-ink;
+  }
+
+  h2 {
+    @apply text-h2 text-ink;
+  }
+
+  h3 {
+    @apply text-h3 text-ink;
+  }
+
+  /* Links */
+  a {
+    @apply text-ink hover:underline;
+  }
 }
 
 @layer components {
+  /* Button variants */
   .btn {
-    @apply px-4 py-2 rounded font-medium transition-colors focus:outline-none;
+    @apply px-lg py-sm rounded-md font-medium transition-colors focus:outline-none;
+    @apply inline-flex items-center justify-center gap-2;
   }
 
   .btn-primary {
-    @apply bg-notion-text text-white hover:bg-opacity-90;
+    @apply bg-primary text-white hover:opacity-90;
   }
 
   .btn-secondary {
-    @apply bg-white text-notion-text border border-notion-border hover:bg-notion-hover;
+    @apply bg-card text-ink border border-border-light hover:bg-cream-dark;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-cream-dark text-ink-medium hover:text-ink;
   }
 
   .btn-success {
-    @apply bg-green-600 text-white hover:bg-green-700;
+    @apply bg-success text-white hover:opacity-90;
   }
 
   .btn-danger {
-    @apply bg-red-600 text-white hover:bg-red-700;
+    @apply bg-danger text-white hover:opacity-90;
   }
 
+  /* Input fields */
   .input {
-    @apply w-full px-3 py-2 text-sm border border-notion-border rounded bg-white text-notion-text;
-    @apply focus:outline-none focus:border-notion-text;
+    @apply w-full px-md py-sm text-sm border border-border-light rounded-md bg-card text-ink;
+    @apply focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink;
+    @apply placeholder:text-ink-light;
   }
 
+  .textarea {
+    @apply input resize-none;
+  }
+
+  /* Cards */
   .card {
-    @apply bg-white rounded border border-notion-border;
+    @apply bg-card rounded-md border border-border-light shadow-card;
   }
 
-  .tab {
-    @apply px-4 py-2 font-medium text-notion-textLight hover:text-notion-text border-b-2 border-transparent hover:border-notion-border transition-colors;
+  .card-hover {
+    @apply card transition-all hover:border-border-default hover:shadow-md;
   }
 
-  .tab-active {
-    @apply text-notion-text border-notion-text hover:border-notion-text;
+  /* Page layout */
+  .page-container {
+    @apply max-w-5xl mx-auto px-xl py-2xl;
+  }
+
+  .page-header {
+    @apply mb-2xl;
+  }
+
+  .page-title {
+    @apply text-h1 mb-md text-ink;
   }
 }
 
 /* React Flow custom styles */
 .react-flow__node {
-  @apply rounded shadow-sm border-2 border-notion-border;
+  @apply rounded-md shadow-card border-2 border-light;
 }
 
 .react-flow__node.selected {
-  @apply border-notion-text;
+  @apply border-ink ring-2 ring-ink ring-opacity-20;
 }
 
 .react-flow__handle {
@@ -66,13 +105,13 @@
 }
 
 .react-flow__edge.selected .react-flow__edge-path {
-  @apply stroke-notion-text;
+  @apply stroke-ink;
 }
 
 .react-flow__controls {
-  @apply shadow-sm;
+  @apply shadow-md bg-card border border-light rounded-md;
 }
 
 .react-flow__minimap {
-  @apply shadow-sm;
+  @apply shadow-md bg-card border border-light rounded-md;
 }

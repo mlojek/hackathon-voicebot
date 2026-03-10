@@ -1,0 +1,186 @@
+/**
+ * Design Tokens
+ * Editorial/Notion-inspired design system
+ * Aligned with voice-app aesthetic
+ */
+
+:root {
+  /* ========================================
+     Base Colors
+     ======================================== */
+
+  --color-bg-primary: #f0ede8;        /* Warm cream — main background */
+  --color-bg-secondary: #e8e5e0;      /* Slightly darker cream */
+  --color-bg-card: #fdfcfa;           /* Off-white for cards */
+  --color-bg-dark: #1a1a1a;           /* Dark header/sidebar */
+
+  /* ========================================
+     Text Colors
+     ======================================== */
+
+  --color-text-primary: #1a1a1a;      /* Almost black */
+  --color-text-secondary: #4a4a4a;    /* Medium gray */
+  --color-text-tertiary: #787774;     /* Light gray */
+  --color-text-inverse: #ffffff;      /* White text on dark bg */
+
+  /* ========================================
+     Borders
+     ======================================== */
+
+  --color-border-light: #e3e2df;      /* Subtle borders */
+  --color-border-default: #d4d2ce;    /* Default borders */
+
+  /* ========================================
+     Accent Colors
+     ======================================== */
+
+  --color-accent-primary: #e85d3a;    /* Coral — main CTA */
+  --color-accent-blue: #2383e2;       /* Notion blue — info */
+  --color-accent-green: #448361;      /* Success */
+  --color-accent-amber: #d9730d;      /* Warning */
+  --color-accent-red: #e03e3e;        /* Error/danger */
+
+  /* ========================================
+     Status Colors
+     ======================================== */
+
+  --color-status-draft: #787774;      /* Gray */
+  --color-status-published: #448361;  /* Green */
+  --color-status-archived: #9b9a97;   /* Light gray */
+
+  /* ========================================
+     Sidebar (Dark Theme)
+     ======================================== */
+
+  --color-sidebar-bg: #1a1a1a;
+  --color-sidebar-hover: #2a2a2a;
+  --color-sidebar-active: #3a3a3a;
+  --color-sidebar-text: #e8e5e0;
+  --color-sidebar-text-hover: #ffffff;
+
+  /* ========================================
+     Typography
+     ======================================== */
+
+  /* Font families */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'SF Mono', 'Consolas', 'Monaco', monospace;
+
+  /* Headings (tight, architectural) */
+  --font-title: 700 40px/1.1 var(--font-sans);
+  --font-heading-1: 600 32px/1.2 var(--font-sans);
+  --font-heading-2: 600 24px/1.2 var(--font-sans);
+  --font-heading-3: 600 18px/1.3 var(--font-sans);
+
+  /* Section labels (numbered) */
+  --font-label: 600 11px/1.2 var(--font-mono);
+  --font-label-spacing: 0.1em;
+
+  /* Body */
+  --font-body: 400 16px/1.6 var(--font-sans);
+  --font-small: 400 14px/1.5 var(--font-sans);
+  --font-tiny: 400 12px/1.4 var(--font-sans);
+
+  /* Data/Numbers (monospace) */
+  --font-data: 400 14px/1.5 var(--font-mono);
+  --font-code: 400 14px/1.5 var(--font-mono);
+
+  /* ========================================
+     Spacing
+     ======================================== */
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* ========================================
+     Border Radius
+     ======================================== */
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* ========================================
+     Shadows (Minimal)
+     ======================================== */
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+
+body {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+}
+
+/* Monospace for specific elements */
+code,
+kbd,
+samp,
+pre,
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+/* Section labels */
+.section-label {
+  font: var(--font-label);
+  letter-spacing: var(--font-label-spacing);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+/* Card */
+.card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+/* Data/timestamp text */
+.text-data {
+  font: var(--font-data);
+  color: var(--color-text-secondary);
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font: var(--font-tiny);
+  font-weight: 500;
+}
+
+.status-badge.draft {
+  background: rgba(120, 119, 116, 0.1);
+  color: var(--color-status-draft);
+}
+
+.status-badge.published {
+  background: rgba(68, 131, 97, 0.1);
+  color: var(--color-status-published);
+}
+
+.status-badge.archived {
+  background: rgba(155, 154, 151, 0.1);
+  color: var(--color-status-archived);
+}
