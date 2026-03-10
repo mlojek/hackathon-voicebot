@@ -55,6 +55,43 @@
     @apply cursor-pointer;
   }
 
+  /* Enhanced card with sophisticated hover */
+  .card-hover-enhanced {
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.06];
+    @apply rounded-2xl p-6 relative overflow-hidden;
+    @apply transition-all duration-500 ease-out;
+    @apply cursor-pointer;
+  }
+
+  .card-hover-enhanced::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-all duration-500;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .card-hover-enhanced:hover {
+    @apply bg-white/[0.08] border-white/[0.12];
+    @apply -translate-y-2;
+  }
+
+  .card-hover-enhanced:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Minimal card variant - no background or border */
+  .card-minimal {
+    @apply bg-transparent border-transparent;
+    @apply rounded-2xl p-6 relative overflow-hidden;
+    @apply transition-all duration-500 ease-out;
+    @apply cursor-pointer;
+  }
+
+  .card-minimal:hover {
+    @apply bg-white/[0.03];
+    @apply -translate-y-1;
+  }
+
   /* Input styles */
   .input {
     @apply w-full px-4 py-3 rounded-xl;
