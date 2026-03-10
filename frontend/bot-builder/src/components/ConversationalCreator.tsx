@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, Sparkles, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Loader2, Sparkles, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface GeneratedConfig {
@@ -105,7 +105,7 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
   return (
     <div className="max-w-5xl mx-auto py-4">
       {/* Header */}
-      <div className="glass-card p-12 text-center mb-8">
+      <div className="p-12 text-center mb-8">
         <div className="accent-dot mx-auto mb-4"></div>
         <h1 className="text-5xl font-bold text-gradient mb-4">
           {currentConfig ? t('creator.title.refine') : t('creator.title.create')}
@@ -120,26 +120,32 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
 
       {/* Language Selection */}
       <div className="mb-8 flex justify-center">
-        <div className="glass-card inline-flex rounded-2xl p-1.5">
+        <div className="inline-flex gap-8 relative">
           <button
             onClick={() => setLanguage('pl')}
-            className={`px-8 py-3 rounded-xl text-base font-medium transition-all ${
+            className={`relative px-4 py-2 text-base font-medium transition-all duration-300 ${
               language === 'pl'
-                ? 'bg-gradient-to-r from-[#c17b5c] to-[#8b5c4c] text-white shadow-lg shadow-[#c17b5c]/30'
-                : 'text-secondary hover:bg-white/50'
+                ? 'text-white'
+                : 'text-white/60 hover:text-white/90'
             }`}
           >
             {t('creator.language.pl')}
+            {language === 'pl' && (
+              <span className="absolute bottom-0 left-0 right-0 h-px bg-white animate-[slideIn_0.3s_ease-out]" />
+            )}
           </button>
           <button
             onClick={() => setLanguage('en')}
-            className={`px-8 py-3 rounded-xl text-base font-medium transition-all ${
+            className={`relative px-4 py-2 text-base font-medium transition-all duration-300 ${
               language === 'en'
-                ? 'bg-gradient-to-r from-[#c17b5c] to-[#8b5c4c] text-white shadow-lg shadow-[#c17b5c]/30'
-                : 'text-secondary hover:bg-white/50'
+                ? 'text-white'
+                : 'text-white/60 hover:text-white/90'
             }`}
           >
             {t('creator.language.en')}
+            {language === 'en' && (
+              <span className="absolute bottom-0 left-0 right-0 h-px bg-white animate-[slideIn_0.3s_ease-out]" />
+            )}
           </button>
         </div>
       </div>
@@ -199,7 +205,7 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
                 <div
                   key={idx}
                   onClick={() => !isGenerating && setDescription(example.text)}
-                  className="card-hover"
+                  className="card-hover-enhanced"
                 >
                   <div className="flex items-start justify-between gap-6">
                     <div className="flex-1">
@@ -219,11 +225,19 @@ export const ConversationalCreator: React.FC<Props> = ({ onGenerate, currentConf
         /* Refinement Mode */
         <div className="space-y-8">
           {/* Success message */}
-          <div className="glass-card p-8 flex items-start gap-4 border border-[#8b9c5c]/30 bg-white/90">
-            <CheckCircle2 className="w-8 h-8 text-[#8b9c5c] flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="font-bold text-primary text-xl mb-2">{t('creator.success')}</h3>
-              <p className="text-base text-secondary">
+          <div className="relative overflow-visible p-8 text-center animate-[successGlow_1.2s_ease-out]">
+            {/* Ambient glow particles */}
+            <div className="absolute top-1/4 left-1/4 w-8 h-8 bg-white/30 rounded-full blur-xl animate-[glowFloat_3s_ease-in-out_infinite]" />
+            <div className="absolute top-1/3 right-1/4 w-12 h-12 bg-white/20 rounded-full blur-2xl animate-[glowFloat_4s_ease-in-out_infinite_0.5s]" />
+            <div className="absolute bottom-1/4 left-1/3 w-10 h-10 bg-white/25 rounded-full blur-xl animate-[glowFloat_3.5s_ease-in-out_infinite_1s]" />
+            <div className="absolute top-1/2 right-1/3 w-6 h-6 bg-white/35 rounded-full blur-lg animate-[glowFloat_2.5s_ease-in-out_infinite_1.5s]" />
+
+            {/* Message with subtle glow */}
+            <div className="relative">
+              <h3 className="font-semibold text-white text-2xl mb-3 animate-[subtleSlide_0.8s_ease-out] drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                {t('creator.success')}
+              </h3>
+              <p className="text-lg text-white/70 max-w-xl mx-auto animate-[subtleSlide_0.8s_ease-out_0.15s_both]">
                 {t('creator.success.hint')}
               </p>
             </div>

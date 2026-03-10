@@ -172,7 +172,7 @@ export const translations = {
     'botList.error.retry': 'Try again',
 
     // Conversational Creator
-    'creator.title.create': 'Create voicebot',
+    'creator.title.create': 'Create a voicebot',
     'creator.title.refine': 'Improve your bot',
     'creator.subtitle.create': 'Describe what your voicebot should do, and AI will generate everything for you',
     'creator.subtitle.refine': 'Tell us what you want to change, and AI will update the configuration',

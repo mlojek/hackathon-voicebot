@@ -68,7 +68,7 @@ function App() {
     setView('editor');
     setConfig(null);
     setCurrentBotId(null);
-    setBotName('Nowy Voicebot');
+    setBotName('super kitties');
     setBotDescription('');
     setBotLanguage('pl');
     setActiveTab('create');
@@ -289,23 +289,26 @@ function App() {
       </header>
 
       {showAdvanced && (
-        <div className="glass-card sticky top-24 z-40 mx-4 mb-6">
+        <div className="sticky top-24 z-40 mx-4 mb-12">
           <div className="max-w-7xl mx-auto px-8 py-2">
-            <div className="flex gap-2">
+            <div className="flex gap-8 justify-center relative">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative px-6 py-3 text-sm font-medium rounded-lg transition-all ${
+                  className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 ${
                     activeTab === tab.id
-                      ? 'bg-gradient-to-r from-[#c17b5c] to-[#8b5c4c] text-white shadow-lg shadow-[#c17b5c]/30'
-                      : 'text-secondary hover:bg-white/50'
+                      ? 'text-white'
+                      : 'text-white/60 hover:text-white/90'
                   }`}
                 >
-                  <div className="flex flex-col items-start">
+                  <div className="flex flex-col items-center">
                     <span>{tab.label}</span>
-                    <span className="text-xs opacity-75">{tab.desc}</span>
+                    <span className="text-[10px] opacity-60 mt-0.5">{tab.desc}</span>
                   </div>
+                  {activeTab === tab.id && (
+                    <span className="absolute bottom-0 left-0 right-0 h-px bg-white animate-[slideIn_0.3s_ease-out]" />
+                  )}
                 </button>
               ))}
             </div>

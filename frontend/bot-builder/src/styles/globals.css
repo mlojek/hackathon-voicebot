@@ -127,8 +127,8 @@
 
   .btn-secondary {
     @apply bg-transparent;
-    @apply text-white border border-white/30;
-    @apply hover:bg-white/5 hover:border-white/50;
+    @apply text-white border border-transparent;
+    @apply hover:bg-white/5;
     @apply transition-all duration-200;
     @apply focus:ring-white/30;
   }
@@ -314,5 +314,39 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Success animations - subtle and glowing */
+@keyframes successGlow {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+@keyframes glowFloat {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translate(10px, -15px) scale(1.2);
+  }
+}
+
+@keyframes subtleSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
