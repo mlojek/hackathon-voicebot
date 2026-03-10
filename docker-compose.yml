@@ -13,6 +13,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
       - ./database/seeds/default_flow.sql:/docker-entrypoint-initdb.d/02-seeds.sql
+      - ./database/seeds/mock_sessions.sql:/docker-entrypoint-initdb.d/03-mock-sessions.sql
+      - ./database/seeds/extended_mock_sessions.sql:/docker-entrypoint-initdb.d/04-extended-mock-sessions.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U callcenter"]
       interval: 2s
