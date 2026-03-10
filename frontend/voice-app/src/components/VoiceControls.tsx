@@ -1,5 +1,6 @@
 import { Language, SessionState } from '../App'
 import AudioVisualizer from './AudioVisualizer'
+import SessionTimer from './SessionTimer'
 import { useAudioAnalyser } from '../hooks/useAudioAnalyser'
 
 interface VoiceControlsProps {
@@ -12,6 +13,7 @@ interface VoiceControlsProps {
   onEscalate: () => void
   onRetry: () => void
   onToggleAudio: () => void
+  onTimeout: () => void
   language: Language
 }
 
@@ -25,6 +27,7 @@ export default function VoiceControls({
   onEscalate,
   onRetry,
   onToggleAudio,
+  onTimeout,
   language,
 }: VoiceControlsProps) {
   const levels = useAudioAnalyser(audioStream)
@@ -50,6 +53,11 @@ export default function VoiceControls({
       <div className="flex items-center justify-between mb-6">
         <span className="font-mono text-xs text-notion-textLight uppercase tracking-widest">Status</span>
         <span className="font-mono text-xs text-notion-text">{statusText[sessionState]}</span>
+      </div>
+
+      {/* Timer */}
+      <div className="mb-3">
+        <SessionTimer isActive={isActive} onTimeout={onTimeout} />
       </div>
 
       {/* Visualizer */}

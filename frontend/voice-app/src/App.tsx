@@ -99,6 +99,14 @@ function App() {
     setSessionState('idle')
   }
 
+  const handleTimeout = async () => {
+    try {
+      await disconnect()
+    } catch (_) {}
+    setSessionState('completed')
+    setSessionId(null)
+  }
+
   const toggleLanguage = () => {
     setLanguage((prev) => (prev === 'en' ? 'pl' : 'en'))
   }
@@ -150,6 +158,7 @@ function App() {
               onEscalate={handleEscalate}
               onRetry={handleRetry}
               onToggleAudio={toggleAudio}
+              onTimeout={handleTimeout}
               language={language}
             />
 
