@@ -4,6 +4,7 @@ import TranscriptDisplay from './components/TranscriptDisplay'
 import SessionStatus from './components/SessionStatus'
 import CollectedDataPanel, { CollectedData } from './components/CollectedDataPanel'
 import SatisfactionSurvey from './components/SatisfactionSurvey'
+import NextSteps from './components/NextSteps'
 import { useLiveKit } from './hooks/useLiveKit'
 import { useWebSocket } from './hooks/useWebSocket'
 
@@ -183,25 +184,31 @@ function App() {
               language={language}
             />
 
-            {/* How it works */}
-            <div className="card animate-fadeIn">
-              <h3 className="text-sm font-semibold mb-3" style={{ color: '#1a1a1a' }}>How it works</h3>
-              <ol className="space-y-3">
-                {[
-                  language === 'en' ? 'Click Start Session to connect' : 'Kliknij Rozpocznij, aby się połączyć',
-                  language === 'en' ? `Speak naturally in ${language === 'en' ? 'English' : 'Polish'}` : 'Mów naturalnie po polsku',
-                  language === 'en' ? 'Say "connect me to a consultant" to escalate' : 'Powiedz „połącz z konsultantem" aby eskalować',
-                  language === 'en' ? 'End the session when finished' : 'Zakończ sesję po rozmowie',
-                ].map((step, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-notion-textLight">
-                    <span className="font-mono text-coral-500 font-semibold text-xs mt-0.5 flex-shrink-0">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            {/* Guide / Next steps */}
+            {sessionState === 'completed' ? (
+              <NextSteps language={language} />
+            ) : (
+              <div className="card animate-fadeIn">
+                <h3 className="text-sm font-semibold mb-3" style={{ color: '#1a1a1a' }}>
+                  {language === 'en' ? 'How it works' : 'Jak to działa'}
+                </h3>
+                <ol className="space-y-3">
+                  {[
+                    language === 'en' ? 'Click Start Session to connect' : 'Kliknij Rozpocznij, aby się połączyć',
+                    language === 'en' ? 'Speak naturally in English' : 'Mów naturalnie po polsku',
+                    language === 'en' ? 'Say "connect me to a consultant" to escalate' : 'Powiedz „połącz z konsultantem" aby eskalować',
+                    language === 'en' ? 'End the session when finished' : 'Zakończ sesję po rozmowie',
+                  ].map((step, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-notion-textLight">
+                      <span className="font-mono text-xs mt-0.5 flex-shrink-0" style={{ color: '#1a1a1a' }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
 
             {liveKitError && (
               <div className="card border-red-300 bg-red-50 animate-fadeIn">

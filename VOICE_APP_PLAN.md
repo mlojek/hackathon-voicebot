@@ -38,7 +38,7 @@ Inspired by `ui-inspo/`:
 | Session timer | ✅ Done | Elapsed MM:SS, warning at 9min, auto-stop at 10min |
 | Collected data panel | ✅ Done | 6 OC fields, progress bar, fed by WS slot_update messages |
 | Post-call satisfaction survey | ✅ Done | 5-star modal on completed, optional comment, posts to API |
-| End-of-call next steps | ⬜ Todo | What the user should do after |
+| End-of-call next steps | ✅ Done | Replaces guide card on completed, EN/PL, 4 OC-specific steps |
 | Error retry button | ⬜ Todo | Currently stuck on error state |
 | Session limit warning | ⬜ Todo | Alert at 9 min / terminate at 10 |
 | Abuse warning counter | ⬜ Todo | 3-strike display before termination |
