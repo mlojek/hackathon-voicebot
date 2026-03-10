@@ -8,8 +8,15 @@ import NextSteps from './components/NextSteps'
 import { useLiveKit } from './hooks/useLiveKit'
 import { useWebSocket } from './hooks/useWebSocket'
 
-export type Language = 'en' | 'pl'
-export type SessionState = 'idle' | 'connecting' | 'active' | 'escalated' | 'completed' | 'error'
+interface Flow {
+  id: string;
+  name: string;
+  description?: string;
+  status: string;
+  language: string;
+}
+
+type Mode = 'voice' | 'chat';
 
 function App() {
   const [language, setLanguage] = useState<Language>('en')
@@ -38,14 +45,8 @@ function App() {
   } = useWebSocket(sessionId)
 
   useEffect(() => {
-    if (isConnecting) {
-      setSessionState('connecting')
-    } else if (isConnected && sessionState === 'connecting') {
-      setSessionState('active')
-    } else if (liveKitError) {
-      setSessionState('error')
-    }
-  }, [isConnected, isConnecting, liveKitError, sessionState])
+    fetchPublishedFlows();
+  }, []);
 
   // Show survey when session completes
   useEffect(() => {
@@ -111,6 +112,39 @@ function App() {
       } catch (error) {
         console.error('Failed to escalate:', error)
       }
+
+      const result = await response.json();
+      setFlows(result.data || []);
+
+      // Auto-select first flow
+      if (result.data && result.data.length > 0) {
+        setSelectedFlowId(result.data[0].id);
+      }
+    } catch (err: any) {
+      console.error('[APP] Error fetching flows:', err);
+      setError(err.message || 'Nie udało się pobrać listy botów');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startCall = () => {
+    if (!selectedFlowId) {
+      alert('Wybierz bota aby rozpocząć rozmowę');
+      return;
+    }
+    setInCall(true);
+  };
+
+  const endCall = () => {
+    setInCall(false);
+  };
+
+  if (inCall && selectedFlowId) {
+    if (mode === 'chat') {
+      return <ChatMode flowId={selectedFlowId} onEnd={endCall} />;
+    } else {
+      return <PipecatVoiceCall flowId={selectedFlowId} onEnd={endCall} />;
     }
   }
 
@@ -220,8 +254,7 @@ function App() {
                 <div className="panel-label text-red-400">Error</div>
                 <p className="text-sm text-red-700">{liveKitError}</p>
               </div>
-            )}
-          </div>
+            </div>
 
           {/* Middle — Transcript */}
           <div className="lg:col-span-2">
@@ -251,7 +284,7 @@ function App() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
