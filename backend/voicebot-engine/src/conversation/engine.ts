@@ -9,6 +9,8 @@ import { checkSafetyGuardrails } from '../safety/guardrails';
 import { RateLimiter } from '../safety/limiter';
 import { saveTranscript, updateSessionStatus, updateSessionCollectedData } from '../db';
 import { CostTracker } from '../utils/cost-tracker';
+import { BranchDetectionService } from '../services/BranchDetectionService';
+import { FieldCollectionService } from '../services/FieldCollectionService';
 
 export class ConversationEngine extends EventEmitter {
   private sessionId: string;
@@ -17,9 +19,13 @@ export class ConversationEngine extends EventEmitter {
   private slotFiller: SlotFiller;
   private rateLimiter: RateLimiter;
   private costTracker: CostTracker;
+  private branchDetectionService: BranchDetectionService;
+  private fieldCollectionService: FieldCollectionService;
   private audioResponseCallback: (audioData: Buffer) => Promise<void>;
   private isActive: boolean = false;
   private startTime: Date;
+  private activeBranchPath: string[] = [];
+  private currentNodeId: string | null = null;
 
   constructor(
     sessionId: string,
@@ -34,6 +40,8 @@ export class ConversationEngine extends EventEmitter {
     this.slotFiller = new SlotFiller(flow);
     this.rateLimiter = new RateLimiter(sessionId);
     this.costTracker = new CostTracker(sessionId);
+    this.branchDetectionService = new BranchDetectionService();
+    this.fieldCollectionService = new FieldCollectionService();
     this.startTime = new Date();
   }
 
@@ -125,6 +133,17 @@ export class ConversationEngine extends EventEmitter {
       return;
     }
 
+    // Check if we need to detect a branch (only if no branch is active yet)
+    if (this.activeBranchPath.length === 0 && this.hasBranchingFlow()) {
+      const branchDetected = await this.detectAndActivateBranch(userText);
+      if (branchDetected) {
+        // Branch detected, ask for branch-specific fields
+        const response = await this.generateBranchConfirmation();
+        await this.sendBotMessage(response);
+        return;
+      }
+    }
+
     // Extract and validate slots
     const extractedSlots = await this.slotFiller.extractSlots(
       userText,
@@ -137,14 +156,20 @@ export class ConversationEngine extends EventEmitter {
       this.stateManager.setSlot(slotName, value);
     }
 
+    // Validate collected fields against branch requirements
+    if (this.activeBranchPath.length > 0) {
+      await this.validateBranchFields();
+    }
+
     // Save collected data
     await updateSessionCollectedData(
       this.sessionId,
       this.stateManager.getCollectedData()
     );
 
-    // Check if all required slots are filled
-    if (this.stateManager.isComplete()) {
+    // Check if all required slots are filled (considering active branch)
+    const isComplete = await this.checkCompletionStatus();
+    if (isComplete) {
       await this.handleConversationComplete();
       return;
     }
@@ -275,10 +300,194 @@ export class ConversationEngine extends EventEmitter {
     await this.end();
   }
 
+  /**
+   * Check if the flow has branching nodes
+   */
+  private hasBranchingFlow(): boolean {
+    const flowDef = this.flow.flow_definition;
+    if (!flowDef || !flowDef.nodes) return false;
+
+    return flowDef.nodes.some((node: any) => node.type === 'branch');
+  }
+
+  /**
+   * Detect which branch to activate based on user input
+   */
+  private async detectAndActivateBranch(userText: string): Promise<boolean> {
+    const flowDef = this.flow.flow_definition;
+    if (!flowDef || !flowDef.nodes) return false;
+
+    // Find branch nodes
+    const branchNodes = flowDef.nodes.filter((node: any) => node.type === 'branch');
+
+    if (branchNodes.length === 0) return false;
+
+    // For simplicity, use the first branch node
+    const branchNode = branchNodes[0];
+
+    if (!branchNode.data.branches || branchNode.data.branches.length === 0) {
+      return false;
+    }
+
+    // Use BranchDetectionService to detect branch
+    const sessionContext = {
+      session_id: this.sessionId,
+      flow_id: this.flow.id,
+      current_node_id: branchNode.id,
+      active_branch_path: this.activeBranchPath,
+      collected_fields: this.stateManager.getCollectedData(),
+      required_for_branch: [],
+      missing_fields: [],
+      validation_errors: {},
+      created_at: this.startTime,
+      updated_at: new Date(),
+    };
+
+    const detectionResult = await this.branchDetectionService.detectBranch(
+      branchNode,
+      userText,
+      sessionContext
+    );
+
+    console.log('[BRANCH] Detection result:', {
+      action: detectionResult.action,
+      selected_branch: detectionResult.selected_branch,
+      confidence: detectionResult.confidence,
+    });
+
+    if (detectionResult.action === 'proceed' && detectionResult.selected_branch) {
+      // Activate this branch
+      this.activeBranchPath.push(detectionResult.selected_branch);
+      this.currentNodeId = branchNode.id;
+
+      console.log('[BRANCH] Activated branch:', detectionResult.selected_branch);
+      return true;
+    }
+
+    if (detectionResult.action === 'clarify' && detectionResult.clarification_prompt) {
+      // Ask for clarification
+      await this.sendBotMessage(detectionResult.clarification_prompt);
+      return false;
+    }
+
+    // Re-prompt if unclear
+    return false;
+  }
+
+  /**
+   * Generate confirmation message for selected branch
+   */
+  private async generateBranchConfirmation(): Promise<string> {
+    if (this.activeBranchPath.length === 0) {
+      return "Let me help you with that.";
+    }
+
+    const branchId = this.activeBranchPath[0];
+    const flowDef = this.flow.flow_definition;
+
+    if (!flowDef || !flowDef.nodes) {
+      return "I understand. Let me collect some information.";
+    }
+
+    // Find the branch configuration
+    const branchNodes = flowDef.nodes.filter((node: any) => node.type === 'branch');
+    if (branchNodes.length === 0) return "Let me help you with that.";
+
+    const branchNode = branchNodes[0];
+    const branch = branchNode.data.branches?.find((b: any) => b.id === branchId);
+
+    if (branch) {
+      return `I understand this is about ${branch.name}. Let me collect the necessary information.`;
+    }
+
+    return "I understand. Let me collect some information.";
+  }
+
+  /**
+   * Validate collected fields against branch requirements
+   */
+  private async validateBranchFields(): Promise<void> {
+    if (this.activeBranchPath.length === 0) return;
+
+    const branchId = this.activeBranchPath[0];
+    const flowDef = this.flow.flow_definition;
+
+    if (!flowDef || !flowDef.nodes) return;
+
+    const branchNodes = flowDef.nodes.filter((node: any) => node.type === 'branch');
+    if (branchNodes.length === 0) return;
+
+    const branchNode = branchNodes[0];
+    const branches = branchNode.data.branches || [];
+
+    // Use FieldCollectionService to validate
+    const collectedData = this.stateManager.getCollectedData();
+
+    for (const [fieldName, value] of Object.entries(collectedData)) {
+      const fieldConfig = this.flow.required_fields.find(f => f.name === fieldName);
+
+      if (fieldConfig && fieldConfig.validation) {
+        const validationResult = await this.fieldCollectionService.validateField(
+          fieldConfig,
+          value
+        );
+
+        if (!validationResult.valid) {
+          console.warn('[VALIDATION] Field validation failed:', {
+            field: fieldName,
+            errors: validationResult.errors,
+          });
+        }
+      }
+    }
+  }
+
+  /**
+   * Check if conversation is complete based on active branch requirements
+   */
+  private async checkCompletionStatus(): Promise<boolean> {
+    // If no branch is active, use default completion check
+    if (this.activeBranchPath.length === 0) {
+      return this.stateManager.isComplete();
+    }
+
+    const branchId = this.activeBranchPath[0];
+    const flowDef = this.flow.flow_definition;
+
+    if (!flowDef || !flowDef.nodes) {
+      return this.stateManager.isComplete();
+    }
+
+    const branchNodes = flowDef.nodes.filter((node: any) => node.type === 'branch');
+    if (branchNodes.length === 0) {
+      return this.stateManager.isComplete();
+    }
+
+    const branchNode = branchNodes[0];
+    const branches = branchNode.data.branches || [];
+
+    // Check if branch-specific fields are complete
+    const isComplete = this.fieldCollectionService.isCollectionComplete(
+      branchId,
+      branches,
+      this.flow.required_fields,
+      this.stateManager.getCollectedData()
+    );
+
+    console.log('[BRANCH] Completion check:', {
+      branchId,
+      isComplete,
+      collected: Object.keys(this.stateManager.getCollectedData()),
+    });
+
+    return isComplete;
+  }
+
   async end(): Promise<void> {
     this.isActive = false;
     console.log(`Ending conversation for session ${this.sessionId}`);
     console.log('Cost summary:', this.costTracker.getSummary());
+    console.log('Active branch:', this.activeBranchPath);
     this.emit('end');
   }
 }
