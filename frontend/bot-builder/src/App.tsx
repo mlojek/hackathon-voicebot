@@ -6,7 +6,6 @@ import VersionHistory from './components/VersionHistory-simple';
 import BotList from './components/BotList';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { useLanguage } from './i18n/LanguageContext';
-import { Save, Eye, EyeOff, ArrowLeft, List } from 'lucide-react';
 
 interface Flow {
   nodes: any[];
@@ -57,6 +56,30 @@ function App() {
   const [currentBotId, setCurrentBotId] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 50) {
+        // Near top - always show
+        setIsHeaderVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down - hide
+        setIsHeaderVisible(false);
+      } else if (currentScrollY < lastScrollY - 20) {
+        // Scrolling up with some momentum - show
+        setIsHeaderVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const handleGenerate = (generated: GeneratedConfig) => {
     setConfig(generated);
@@ -216,7 +239,14 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-4 z-50 mx-4 mb-6">
+      {/* Fixed Language Switcher - Top Right */}
+      <div className="fixed top-4 right-8 z-50">
+        <LanguageSwitcher />
+      </div>
+
+      <header className={`sticky top-4 z-40 mx-4 mb-6 transition-all duration-300 ${
+        isHeaderVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
+      }`}>
         <div className="max-w-7xl mx-auto px-8 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -226,52 +256,42 @@ function App() {
                   <h1 className="text-2xl font-bold text-gradient">super kitties</h1>
                 </div>
               ) : (
-                <>
-                  <div className="flex items-center gap-3">
-                    <div className="accent-dot"></div>
-                    <input
-                      type="text"
-                      value={botName}
-                      onChange={(e) => {
-                        setBotName(e.target.value);
-                        setHasUnsavedChanges(true);
-                      }}
-                      className="text-xl font-bold text-gradient bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-[#c17b5c]/50 rounded-lg px-2"
-                    />
-                    {hasUnsavedChanges && (
-                      <span className="text-xs text-[#c17b5c] font-medium">• {t('header.unsaved')}</span>
-                    )}
-                  </div>
-                </>
+                <div className="flex items-center gap-3">
+                  <div className="accent-dot"></div>
+                  <input
+                    type="text"
+                    value={botName}
+                    onChange={(e) => {
+                      setBotName(e.target.value);
+                      setHasUnsavedChanges(true);
+                    }}
+                    className="text-xl font-bold text-gradient bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-[#c17b5c]/50 rounded-lg px-2"
+                  />
+                </div>
               )}
             </div>
             <div className="flex items-center gap-3">
-              {view === 'list' && <LanguageSwitcher />}
               {view === 'editor' && (
                 <>
-                  <LanguageSwitcher />
                   <button
                     onClick={handleBackToList}
-                    className="btn btn-secondary flex items-center gap-2"
+                    className="btn btn-secondary"
                   >
-                    <ArrowLeft className="w-4 h-4" />
                     {t('header.backToList')}
                   </button>
               {config && (
                 <button
                   onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="btn btn-secondary flex items-center gap-2"
+                  className="btn btn-secondary"
                 >
-                  {showAdvanced ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   {showAdvanced ? t('header.hideAdvanced') : t('header.showAdvanced')}
                 </button>
               )}
               <button
                 onClick={handleSave}
                 disabled={!config || !hasUnsavedChanges}
-                className="btn btn-secondary flex items-center gap-2"
+                className="btn btn-secondary"
               >
-                <Save className="w-4 h-4" />
                 {t('header.save')}
               </button>
               <button
@@ -289,7 +309,9 @@ function App() {
       </header>
 
       {showAdvanced && (
-        <div className="sticky top-24 z-40 mx-4 mb-12">
+        <div className={`sticky top-24 z-40 mx-4 mb-12 transition-all duration-300 ${
+          isHeaderVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
+        }`}>
           <div className="max-w-7xl mx-auto px-8 py-2">
             <div className="flex gap-8 justify-center relative">
               {tabs.map((tab) => (
