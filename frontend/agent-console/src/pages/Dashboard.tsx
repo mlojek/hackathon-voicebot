@@ -66,8 +66,15 @@ function DashboardContent() {
   React.useEffect(() => {
     if (lastUpdated) {
       console.log(`Dashboard metrics updated at: ${lastUpdated.toLocaleTimeString()}`);
+      console.log(`Current timeframe: ${timeframe}`);
     }
-  }, [lastUpdated]);
+  }, [lastUpdated, timeframe]);
+
+  // Handle timeframe changes
+  const handleTimeframeChange = (newTimeframe: Timeframe) => {
+    console.log('Changing timeframe to:', newTimeframe);
+    setTimeframe(newTimeframe);
+  };
 
   // We no longer need to show errors - the API will always return data
 
@@ -111,7 +118,7 @@ function DashboardContent() {
         </div>
 
         <div className="flex items-center gap-6">
-          <TimeframeSelector onChange={setTimeframe} defaultValue="all" />
+          <TimeframeSelector onChange={handleTimeframeChange} defaultValue={timeframe} />
           <LanguageSwitch />
 
           {lastUpdated && (

@@ -219,6 +219,13 @@
   @apply text-white;
 }
 
+/* Select option styling */
+option {
+  background-color: #1f2937; /* Tailwind gray-800 */
+  color: white;
+  padding: 8px;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
