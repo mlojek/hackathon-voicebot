@@ -69,94 +69,122 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Ładowanie botów...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white/40 mx-auto mb-4"></div>
+          <p className="text-white/80">Loading bots...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">VoiceBot Demo</h1>
-        <p className="text-gray-600 mb-8">Wybierz bota i rozpocznij rozmowę</p>
-
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
-
-        {/* Flow Selector */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Wybierz bota
-          </label>
-          <select
-            value={selectedFlowId || ''}
-            onChange={(e) => setSelectedFlowId(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="" disabled>-- Wybierz bota --</option>
-            {flows.map(flow => (
-              <option key={flow.id} value={flow.id}>
-                {flow.name}
-              </option>
-            ))}
-          </select>
+    <div className="min-h-screen flex flex-col relative">
+      {/* Logo - Top Left */}
+      <div className="fixed top-8 left-8 z-50">
+        <div className="flex items-center gap-3">
+          <div className="accent-dot"></div>
+          <h1 className="text-xl font-bold text-white tracking-tight">super kitties</h1>
         </div>
+      </div>
 
-        {/* Mode Selector */}
-        <div className="mb-8">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tryb rozmowy
-          </label>
-          <div className="grid grid-cols-2 gap-4">
+      {/* Ambient glow particles */}
+      <div className="fixed top-1/4 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-[glowFloat_6s_ease-in-out_infinite]" />
+      <div className="fixed top-1/3 right-1/4 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-[glowFloat_8s_ease-in-out_infinite_1s]" />
+
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-6 relative z-10">
+        <div className="max-w-xl w-full">
+          <div className="glass-card p-10">
+            {/* Title */}
+            <div className="mb-2">
+              <h2 className="text-3xl font-bold text-white mb-1">VoiceBot Demo</h2>
+              <p className="text-white/60 text-sm">Choose a bot and start the conversation</p>
+            </div>
+
+            {error && (
+              <div className="mt-6 mb-6 bg-white/[0.08] border border-white/20 rounded-xl p-4">
+                <p className="text-white/90 text-sm">{error}</p>
+              </div>
+            )}
+
+            {/* Flow Selector */}
+            <div className="mt-8 mb-6">
+              <label className="block text-[11px] font-semibold text-white/50 mb-3 uppercase tracking-widest">
+                Select Bot
+              </label>
+              <select
+                value={selectedFlowId || ''}
+                onChange={(e) => setSelectedFlowId(e.target.value)}
+                className="input"
+              >
+                <option value="" disabled>Select a bot</option>
+                {flows.map(flow => (
+                  <option key={flow.id} value={flow.id}>
+                    {flow.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Mode Selector */}
+            <div className="mb-8">
+              <label className="block text-[11px] font-semibold text-white/50 mb-3 uppercase tracking-widest">
+                Conversation Mode
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setMode('chat')}
+                  className={`relative px-6 py-4 rounded-xl font-medium transition-all duration-300 overflow-hidden ${
+                    mode === 'chat'
+                      ? 'bg-white/20 text-white border border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.1)]'
+                      : 'bg-white/[0.04] text-white/70 border border-white/10 hover:bg-white/10 hover:text-white hover:border-white/20'
+                  }`}
+                >
+                  {mode === 'chat' && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-50" />
+                  )}
+                  <span className="relative">Chat</span>
+                </button>
+                <button
+                  onClick={() => setMode('voice')}
+                  className={`relative px-6 py-4 rounded-xl font-medium transition-all duration-300 overflow-hidden ${
+                    mode === 'voice'
+                      ? 'bg-white/20 text-white border border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.1)]'
+                      : 'bg-white/[0.04] text-white/70 border border-white/10 hover:bg-white/10 hover:text-white hover:border-white/20'
+                  }`}
+                >
+                  {mode === 'voice' && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-50" />
+                  )}
+                  <span className="relative">Voice</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Start Button */}
             <button
-              onClick={() => setMode('chat')}
-              className={`px-6 py-4 rounded-lg font-medium transition-all ${
-                mode === 'chat'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              onClick={startCall}
+              disabled={!selectedFlowId}
+              className="w-full btn btn-success text-base py-4 shadow-lg"
             >
-              💬 Czat (Tekst)
+              {mode === 'chat' ? 'Start Chat' : 'Start Call'}
             </button>
-            <button
-              onClick={() => setMode('voice')}
-              className={`px-6 py-4 rounded-lg font-medium transition-all ${
-                mode === 'voice'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              🎤 Głos
-            </button>
+
+            {selectedFlowId && (
+              <div className="mt-6 p-4 bg-white/[0.03] border border-white/[0.08] rounded-xl">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-white/50">Selected:</span>
+                  <span className="text-white/90 font-medium">{flows.find(f => f.id === selectedFlowId)?.name}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-2">
+                  <span className="text-white/50">Mode:</span>
+                  <span className="text-white/90 font-medium">{mode === 'chat' ? 'Text chat' : 'Voice call'}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Start Button */}
-        <button
-          onClick={startCall}
-          disabled={!selectedFlowId}
-          className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-        >
-          {mode === 'chat' ? 'Rozpocznij czat' : 'Rozpocznij rozmowę'}
-        </button>
-
-        {selectedFlowId && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>Wybrany bot:</strong> {flows.find(f => f.id === selectedFlowId)?.name}
-            </p>
-            <p className="text-sm text-blue-700 mt-1">
-              <strong>Tryb:</strong> {mode === 'chat' ? 'Czat tekstowy' : 'Rozmowa głosowa'}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

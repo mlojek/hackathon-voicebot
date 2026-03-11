@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, PhoneOff } from 'lucide-react';
 
 interface ChatModeProps {
   flowId: string;
@@ -294,21 +294,24 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
   // Show summary screen after call ends
   if (callEnded) {
     return (
-      <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100 items-center justify-center p-6">
-        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Call Summary</h2>
+      <div className="flex flex-col h-screen items-center justify-center p-6">
+        <div className="max-w-2xl w-full glass-card p-8">
+          <div className="flex items-center gap-3 justify-center mb-6">
+            <div className="accent-dot"></div>
+            <h2 className="text-3xl font-bold text-white">Call Summary</h2>
+          </div>
 
           {/* Collected Data */}
           <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Collected Information</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">Collected Information</h3>
 
             {extractingData ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-3" />
-                <span className="text-gray-600">Analyzing conversation and extracting data...</span>
+                <Loader2 className="w-8 h-8 animate-spin text-white/80 mr-3" />
+                <span className="text-white/70">Analyzing conversation and extracting data...</span>
               </div>
             ) : requiredFields.length > 0 ? (
-              <table className="w-full border border-gray-300 rounded-lg overflow-hidden">
+              <table className="w-full border border-white/10 rounded-lg overflow-hidden">
                 <tbody>
                   {requiredFields.map((field) => {
                     const value = collectedData[field.name];
@@ -316,12 +319,12 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
                     const isRequired = field.required;
 
                     return (
-                      <tr key={field.name} className="border-b border-gray-200">
-                        <td className="px-4 py-3 bg-gray-50 font-semibold text-gray-700 w-1/3">
+                      <tr key={field.name} className="border-b border-white/10">
+                        <td className="px-4 py-3 bg-white/[0.05] font-semibold text-white/90 w-1/3">
                           {label}
-                          {isRequired && <span className="text-red-500 ml-1">*</span>}
+                          {isRequired && <span className="text-red-400 ml-1">*</span>}
                         </td>
-                        <td className={`px-4 py-3 ${value ? 'text-gray-900' : 'text-gray-400 italic'}`}>
+                        <td className={`px-4 py-3 ${value ? 'text-white/90' : 'text-white/40 italic'}`}>
                           {value || '(None)'}
                         </td>
                       </tr>
@@ -330,13 +333,13 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
                 </tbody>
               </table>
             ) : (
-              <p className="text-gray-500 text-center py-4">No required fields configured</p>
+              <p className="text-white/50 text-center py-4">No required fields configured</p>
             )}
           </div>
 
           {/* Satisfaction Survey */}
           <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+            <h3 className="text-xl font-semibold text-white mb-4 text-center">
               How satisfied are you with this call?
             </h3>
             <div className="flex justify-center gap-4 mb-6">
@@ -346,15 +349,15 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
                   onClick={() => setSatisfaction(rating)}
                   className={`w-16 h-16 rounded-full text-2xl font-bold transition-all ${
                     satisfaction === rating
-                      ? 'bg-blue-600 text-white scale-110 shadow-lg'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ? 'bg-white/90 text-[#1a0510] scale-110 shadow-lg shadow-white/20'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20 border border-white/20'
                   }`}
                 >
                   {rating}
                 </button>
               ))}
             </div>
-            <div className="flex justify-between text-sm text-gray-600 px-8">
+            <div className="flex justify-between text-sm text-white/60 px-8">
               <span>Very Dissatisfied</span>
               <span>Very Satisfied</span>
             </div>
@@ -364,7 +367,7 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
           <button
             onClick={submitSatisfaction}
             disabled={satisfaction === null}
-            className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            className="w-full btn btn-success text-lg"
           >
             {satisfaction === null ? 'Please rate your experience' : 'Submit & Close'}
           </button>
@@ -374,36 +377,44 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="flex flex-col h-screen">
       {/* Header */}
-      <div className="bg-white shadow-md p-4 flex items-center justify-between">
+      <div className="bg-white/[0.02] backdrop-blur-xl p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          <div className="relative">
+            <div className="w-2.5 h-2.5 rounded-full bg-white shadow-lg shadow-white/50" />
+            <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-white animate-ping opacity-40" />
+          </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-800">Chat Mode</h2>
-            <p className="text-xs text-gray-500">Type "end" to finish call manually</p>
+            <h2 className="text-xl font-semibold text-white">Chat Mode</h2>
+            <p className="text-xs text-white/60">Type "end" to finish call manually</p>
           </div>
         </div>
 
         <button
           onClick={onEnd}
-          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition"
+          className="group relative w-14 h-14 rounded-full transition-all duration-300"
+          style={{
+            background: 'radial-gradient(circle at 30% 30%, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.15))',
+            boxShadow: '0 0 40px rgba(239, 68, 68, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+          }}
         >
-          End Chat
+          <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/10 to-transparent opacity-50" />
+          <PhoneOff size={22} className="relative text-white/90 mx-auto" />
         </button>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div className="bg-white/[0.08] border border-white/20 text-white px-4 py-3 rounded-xl">
             <p className="font-semibold">Error</p>
-            <p>{error}</p>
+            <p className="text-white/80">{error}</p>
           </div>
         )}
 
         {messages.filter(msg => msg.content).length === 0 && !isLoading && (
-          <div className="text-center text-gray-500 mt-20">
+          <div className="text-center text-white/60 mt-20">
             <p className="text-lg">Waiting for bot greeting...</p>
           </div>
         )}
@@ -414,17 +425,17 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[70%] rounded-lg px-4 py-3 ${
+              className={`max-w-[70%] rounded-xl px-4 py-3 ${
                 message.role === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-800 shadow-md'
+                  ? 'bg-white/20 text-white border border-white/30'
+                  : 'bg-white/[0.08] text-white border border-white/10'
               }`}
             >
-              <p className="text-sm font-semibold mb-1">
+              <p className="text-sm font-semibold mb-1 opacity-70">
                 {message.role === 'user' ? 'You' : 'Bot'}
               </p>
               <p className="text-base whitespace-pre-wrap">{message.content}</p>
-              <p className="text-xs mt-1 opacity-70">
+              <p className="text-xs mt-1 opacity-50">
                 {message.timestamp.toLocaleTimeString()}
               </p>
             </div>
@@ -433,7 +444,7 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-white text-gray-800 shadow-md rounded-lg px-4 py-3">
+            <div className="bg-white/[0.08] text-white border border-white/10 rounded-xl px-4 py-3">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span className="text-sm">Bot is thinking...</span>
@@ -446,7 +457,7 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t p-4">
+      <div className="bg-white/[0.02] backdrop-blur-xl p-4">
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -457,12 +468,12 @@ export const ChatMode: React.FC<ChatModeProps> = ({ flowId, onEnd }) => {
             placeholder={callEnded ? "Call ended" : "Type your message..."}
             disabled={isLoading || callEnded}
             autoFocus
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="input flex-1"
           />
           <button
             onClick={sendMessage}
             disabled={!input.trim() || isLoading || callEnded}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="btn btn-primary flex items-center gap-2"
           >
             <Send size={20} />
             Send
