@@ -48,10 +48,35 @@ router.get(
 
     const result = await query<Session>(queryText, params);
 
+    // Enhance sessions with data field counts
+    const enhancedSessions = await Promise.all(
+      result.rows.map(async (session) => {
+        // Get count of collected data fields
+        const dataFieldsResult = await query(
+          `SELECT COUNT(*) as count FROM session_data WHERE session_id = $1`,
+          [session.id]
+        );
+
+        // Get count of transcript entries
+        const transcriptsResult = await query(
+          `SELECT COUNT(*) as count FROM transcripts WHERE session_id = $1`,
+          [session.id]
+        );
+
+        return {
+          ...session,
+          data_fields_count: parseInt(dataFieldsResult.rows[0]?.count || '0'),
+          transcript_count: parseInt(transcriptsResult.rows[0]?.count || '0')
+        };
+      })
+    );
+
+    console.log(`[Sessions] Retrieved ${enhancedSessions.length} sessions`);
+
     res.json({
       status: 'success',
-      data: result.rows,
-      count: result.rows.length,
+      data: enhancedSessions,
+      count: enhancedSessions.length,
     });
   })
 );
@@ -62,7 +87,8 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const result = await query<Session>(
+    // First, get the session
+    const sessionResult = await query<Session>(
       `
       SELECT s.*, f.name as flow_name
       FROM sessions s
@@ -72,13 +98,62 @@ router.get(
       [id]
     );
 
-    if (result.rows.length === 0) {
+    if (sessionResult.rows.length === 0) {
       throw new AppError('Session not found', 404);
     }
 
+    const session = sessionResult.rows[0];
+
+    // Get session transcripts
+    const transcriptResult = await query(
+      `
+      SELECT speaker, text, timestamp, language
+      FROM transcripts
+      WHERE session_id = $1
+      ORDER BY timestamp ASC
+    `,
+      [id]
+    );
+
+    // Map database speaker values to the frontend expected values
+    const transcripts = transcriptResult.rows.map(transcript => ({
+      ...transcript,
+      // Make sure the speaker is properly identified as 'bot' when the speaker is 'bot'
+      speaker: transcript.speaker === 'bot' ? 'bot' : transcript.speaker
+    }));
+
+    // Get collected data fields
+    const dataFieldsResult = await query(
+      `
+      SELECT field_name, field_value, field_type
+      FROM session_data
+      WHERE session_id = $1
+    `,
+      [id]
+    );
+
+    // Transform data fields into key-value object
+    const collectedData: Record<string, string> = {};
+    for (const row of dataFieldsResult.rows) {
+      collectedData[row.field_name] = row.field_value;
+    }
+
+    // Create enhanced session object with collected data and transcript
+    const enhancedSession = {
+      ...session,
+      transcript: transcripts, // Use the mapped transcripts
+      collected_data: collectedData
+    };
+
+    console.log('[Sessions] Fetched session details with data:', {
+      id,
+      dataFields: Object.keys(collectedData),
+      transcriptCount: transcriptResult.rowCount
+    });
+
     res.json({
       status: 'success',
-      data: result.rows[0],
+      data: enhancedSession,
     });
   })
 );
@@ -285,21 +360,24 @@ router.post(
       language,
       messageCount: messages?.length,
       dataFields: Object.keys(collectedData || {}),
+      dataValues: collectedData || {},
       satisfaction: satisfactionScore
     });
 
     // Start transaction
-    const roomId = `chat-${Date.now()}`;
+    const roomId = `chat-${Date.now()}-${Math.random().toString(36).substring(7)}`;
     const startedAt = new Date(Date.now() - (duration || 0) * 1000);
     const endedAt = new Date();
+
+    console.log('[Sessions] Generated roomId:', roomId);
 
     // 1. Create session record
     const sessionResult = await query(
       `INSERT INTO sessions (
         room_id, status, language, flow_id,
         started_at, ended_at, duration_seconds,
-        satisfaction_score
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        satisfaction_score, client_metadata
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id`,
       [
         roomId,
@@ -309,7 +387,8 @@ router.post(
         startedAt,
         endedAt,
         duration || 0,
-        satisfactionScore
+        satisfactionScore,
+        JSON.stringify({ source: 'chat' }) // Add some client metadata to identify chat sessions
       ]
     );
 
@@ -339,22 +418,38 @@ router.post(
 
     // 3. Save collected data
     if (collectedData && Object.keys(collectedData).length > 0) {
-      for (const [fieldName, fieldValue] of Object.entries(collectedData)) {
-        if (!fieldValue) continue; // Skip empty values
+      console.log('[Sessions] Processing collected data fields:', Object.keys(collectedData));
+      console.log('[Sessions] Data values:', JSON.stringify(collectedData));
 
-        await query(
-          `INSERT INTO session_data (
-            session_id, field_name, field_value,
-            field_type, validation_status
-          ) VALUES ($1, $2, $3, $4, $5)`,
-          [
-            sessionId,
-            fieldName,
-            fieldValue as string,
-            'text',
-            'valid'
-          ]
-        );
+      for (const [fieldName, fieldValue] of Object.entries(collectedData)) {
+        if (!fieldValue && fieldValue !== 0 && fieldValue !== false) continue; // Skip empty values but allow 0 and false
+
+        // Convert non-string values to strings
+        const stringValue = typeof fieldValue === 'string'
+          ? fieldValue
+          : JSON.stringify(fieldValue);
+
+        try {
+          // Use UPSERT to avoid duplicate key errors
+          await query(
+            `INSERT INTO session_data (
+              session_id, field_name, field_value,
+              field_type, validation_status
+            ) VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (session_id, field_name)
+            DO UPDATE SET field_value = $3, updated_at = NOW()`,
+            [
+              sessionId,
+              fieldName,
+              stringValue,
+              'text',
+              'valid'
+            ]
+          );
+          console.log(`[Sessions] Saved field ${fieldName} with value ${stringValue}`);
+        } catch (error) {
+          console.error(`[Sessions] Error saving field ${fieldName}:`, error);
+        }
       }
       console.log('[Sessions] Saved', Object.keys(collectedData).length, 'data fields');
     }
