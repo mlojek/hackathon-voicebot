@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 
 export type Timeframe = 'all' | 'year' | 'month' | 'week' | 'day';
@@ -12,10 +12,16 @@ export function TimeframeSelector({ onChange, defaultValue = 'all' }: TimeframeS
   const { translate } = useLanguage();
   const [timeframe, setTimeframe] = useState<Timeframe>(defaultValue);
 
+  // Set initial value on mount
+  useEffect(() => {
+    onChange(defaultValue);
+  }, []);
+
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value as Timeframe;
     setTimeframe(value);
     onChange(value);
+    console.log('Timeframe changed:', value); // Debug log
   };
 
   return (

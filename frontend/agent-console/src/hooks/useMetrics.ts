@@ -19,18 +19,29 @@ export function useMetrics(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [currentTimeframe, setCurrentTimeframe] = useState<Timeframe>(timeframe);
 
-  // Function to fetch metrics
-  const fetchMetrics = useCallback(async () => {
+  // Update currentTimeframe when timeframe prop changes
+  useEffect(() => {
+    if (currentTimeframe !== timeframe) {
+      console.log(`Timeframe changed from ${currentTimeframe} to ${timeframe}`);
+      setCurrentTimeframe(timeframe);
+      // Force an immediate refresh when timeframe changes
+      fetchMetricsForTimeframe(timeframe);
+    }
+  }, [timeframe]);
+
+  // Function to fetch metrics for a specific timeframe
+  const fetchMetricsForTimeframe = async (tf: Timeframe) => {
     try {
-      console.log(`Fetching metrics for timeframe: ${timeframe}...`);
+      console.log(`Explicitly fetching metrics for timeframe: ${tf}...`);
       setError(null);
       setLoading(true);
 
-      const data = await api.getMetrics(timeframe);
+      const data = await api.getMetrics(tf);
       setMetrics(data);
       setLastUpdated(new Date());
-      console.log('Metrics updated:', data);
+      console.log('Metrics updated for timeframe:', tf, data);
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch metrics';
@@ -40,7 +51,12 @@ export function useMetrics(
     } finally {
       setLoading(false);
     }
-  }, [timeframe]);
+  };
+
+  // Function to fetch metrics using current timeframe
+  const fetchMetrics = useCallback(async () => {
+    return fetchMetricsForTimeframe(currentTimeframe);
+  }, [currentTimeframe]);
 
   // Set up automatic refresh interval
   useEffect(() => {
@@ -52,7 +68,7 @@ export function useMetrics(
       const interval = setInterval(fetchMetrics, refreshInterval);
       return () => clearInterval(interval);
     }
-  }, [fetchMetrics, initialFetch, refreshInterval]);
+  }, [fetchMetrics, initialFetch, refreshInterval, currentTimeframe]);
 
   return {
     metrics,
