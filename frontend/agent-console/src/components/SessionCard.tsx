@@ -30,14 +30,14 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
   return (
     <div
       onClick={onClick}
-      className="card hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-primary-500"
+      className="bg-white/[0.02] backdrop-blur-xl border border-white/[0.04] rounded-3xl p-6 hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300 cursor-pointer"
     >
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="font-semibold text-lg text-white">
+          <h3 className="font-semibold text-lg text-white tracking-tight mb-1">
             {sessionId}
           </h3>
-          <p className="text-sm text-white/60">
+          <p className="text-xs text-white/40 uppercase tracking-wider">
             {formatDistanceToNow(new Date(startTime), {
               addSuffix: true,
             })}
@@ -49,35 +49,38 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
       </div>
 
       {clientInfo && (
-        <div className="mb-3 space-y-1">
+        <div className="mb-4 space-y-2 pb-4 border-b border-white/[0.06]">
           {clientInfo.name && (
-            <p className="text-sm text-white/80">
-              <span className="font-medium">Name:</span> {clientInfo.name}
+            <p className="text-sm text-white/70">
+              <span className="text-white/40 text-xs uppercase tracking-wider mr-2">Name:</span>
+              <span className="text-white">{clientInfo.name}</span>
             </p>
           )}
           {clientInfo.phone && (
-            <p className="text-sm text-white/80">
-              <span className="font-medium">Phone:</span> {clientInfo.phone}
+            <p className="text-sm text-white/70">
+              <span className="text-white/40 text-xs uppercase tracking-wider mr-2">Phone:</span>
+              <span className="text-white">{clientInfo.phone}</span>
             </p>
           )}
           {clientInfo.email && (
-            <p className="text-sm text-white/80">
-              <span className="font-medium">Email:</span> {clientInfo.email}
+            <p className="text-sm text-white/70">
+              <span className="text-white/40 text-xs uppercase tracking-wider mr-2">Email:</span>
+              <span className="text-white">{clientInfo.email}</span>
             </p>
           )}
         </div>
       )}
 
       {session.escalated && session.escalation_reason && (
-        <div className="mb-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-          <p className="text-sm font-medium text-red-300 mb-1">
-            Escalation Reason:
+        <div className="mb-4 p-4 bg-red-500/[0.06] border border-red-500/20 rounded-2xl">
+          <p className="text-xs font-medium text-red-300/80 mb-2 uppercase tracking-wider">
+            Escalation Reason
           </p>
-          <p className="text-sm text-red-200">{session.escalation_reason}</p>
+          <p className="text-sm text-red-200/90">{session.escalation_reason}</p>
         </div>
       )}
 
-      <div className="flex items-center gap-4 text-sm text-white/70">
+      <div className="flex items-center gap-4 text-sm text-white/60">
         <div className="flex items-center gap-1">
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path

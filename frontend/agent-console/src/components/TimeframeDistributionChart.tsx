@@ -71,22 +71,23 @@ export function TimeframeDistributionChart({
   }
 
   return (
-    <div className="pt-4">
-      <h3 className="text-sm font-medium text-white/70 mb-3">
-        {language === 'en' ? 'Call Distribution' : 'Rozkład połączeń'}
-      </h3>
-      <div className="h-48 flex items-end gap-1">
+    <div className="pt-2">
+      <div className="h-48 flex items-end justify-center gap-2">
         {sortedData.map(([unit, value]) => (
-          <div key={unit} className="flex flex-col items-center flex-1">
+          <div key={unit} className="flex flex-col items-center justify-end h-full">
             <div
-              className="w-full bg-white/80 rounded-t"
+              className="w-6 bg-white/60 rounded-t transition-all duration-300 hover:bg-white/80"
               style={{
                 height: `${Math.max(8, (value / maxValue) * 100)}%`,
               }}
             ></div>
-            <div className="text-xs text-white/60 mt-1 w-full text-center truncate">
-              {getLabelForTimeUnit(unit, timeframe)}
-            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-start justify-center gap-2 mt-4">
+        {sortedData.map(([unit]) => (
+          <div key={`label-${unit}`} className="w-6 text-[10px] text-white/40 text-center truncate">
+            {getLabelForTimeUnit(unit, timeframe)}
           </div>
         ))}
       </div>
