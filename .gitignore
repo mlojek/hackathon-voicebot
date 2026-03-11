@@ -13,3 +13,5 @@ postgres_data/
 .idea/
 coverage/
 .turbo/
+.claude-flow/
+.hive-mind/
