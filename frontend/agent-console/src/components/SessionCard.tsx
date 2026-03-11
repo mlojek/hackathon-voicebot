@@ -72,11 +72,11 @@ export function SessionCard({ session, onClick }: SessionCardProps) {
       )}
 
       {session.escalated && session.escalation_reason && (
-        <div className="mb-4 p-4 bg-red-500/[0.06] border border-red-500/20 rounded-2xl">
-          <p className="text-xs font-medium text-red-300/80 mb-2 uppercase tracking-wider">
+        <div className="mb-4 p-4 bg-white/[0.02] border border-red-400/15 rounded-2xl">
+          <p className="text-xs font-medium text-red-300/70 mb-2 uppercase tracking-wider">
             Escalation Reason
           </p>
-          <p className="text-sm text-red-200/90">{session.escalation_reason}</p>
+          <p className="text-sm text-red-200/80">{session.escalation_reason}</p>
         </div>
       )}
 
