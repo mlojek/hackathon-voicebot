@@ -70,7 +70,7 @@ export function NotificationBell() {
     <div className="relative">
       <button
         onClick={handleClick}
-        className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+        className="relative p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
       >
         <svg
           className="w-6 h-6"
@@ -86,12 +86,12 @@ export function NotificationBell() {
           />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+          <span className="absolute top-1 right-1 bg-red-500/90 backdrop-blur-sm text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold border border-red-400/50">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
         {connected && (
-          <span className="absolute bottom-1 right-1 bg-green-400 rounded-full h-2 w-2" />
+          <span className="absolute bottom-1 right-1 bg-green-400 rounded-full h-2 w-2 shadow-lg shadow-green-400/50" />
         )}
       </button>
 
@@ -101,13 +101,13 @@ export function NotificationBell() {
             className="fixed inset-0 z-10"
             onClick={() => setShowDropdown(false)}
           />
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Notifications</h3>
+          <div className="absolute right-0 mt-2 w-80 glass-card z-20 overflow-hidden">
+            <div className="p-4 border-b border-white/10 flex items-center justify-between">
+              <h3 className="font-semibold text-white">Notifications</h3>
               {notifications.length > 0 && (
                 <button
                   onClick={clearAll}
-                  className="text-sm text-primary-600 hover:text-primary-700"
+                  className="text-sm text-white/80 hover:text-white transition-colors"
                 >
                   Clear all
                 </button>
@@ -115,9 +115,9 @@ export function NotificationBell() {
             </div>
             <div className="max-h-96 overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
+                <div className="p-8 text-center text-white/60">
                   <svg
-                    className="w-12 h-12 mx-auto mb-2 text-gray-400"
+                    className="w-12 h-12 mx-auto mb-2 text-white/40"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -136,14 +136,14 @@ export function NotificationBell() {
                   <a
                     key={notification.id}
                     href={`/sessions/${notification.sessionId}`}
-                    className="block p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                    className="block p-4 hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-all duration-200"
                   >
                     <div className="flex items-start gap-3">
                       <div
                         className={`p-2 rounded-lg ${
                           notification.type === 'escalation'
-                            ? 'bg-red-50 text-red-600'
-                            : 'bg-green-50 text-green-600'
+                            ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                            : 'bg-green-500/20 text-green-300 border border-green-500/30'
                         }`}
                       >
                         {notification.type === 'escalation' ? (
@@ -173,10 +173,10 @@ export function NotificationBell() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-900 font-medium">
+                        <p className="text-sm text-white font-medium">
                           {notification.message}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-white/50 mt-1">
                           {new Date(notification.timestamp).toLocaleTimeString()}
                         </p>
                       </div>
