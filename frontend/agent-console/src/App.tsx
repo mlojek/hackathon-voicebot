@@ -16,6 +16,30 @@ export const MetricsContext = createContext<{
 
 function Navigation() {
   const location = useLocation();
+  const [isHeaderVisible, setIsHeaderVisible] = React.useState(true);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 50) {
+        // Near top - always show
+        setIsHeaderVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down - hide
+        setIsHeaderVisible(false);
+      } else if (currentScrollY < lastScrollY - 20) {
+        // Scrolling up with momentum - show
+        setIsHeaderVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const isActive = (path: string) => {
     if (path === '/' && location.pathname === '/') return true;
@@ -24,7 +48,9 @@ function Navigation() {
   };
 
   return (
-    <nav className="bg-white/[0.02] backdrop-blur-xl sticky top-0 z-50 border-b border-white/[0.08]">
+    <nav className={`bg-white/[0.02] backdrop-blur-xl sticky top-0 z-50 border-b border-white/[0.08] transition-all duration-300 ${
+      isHeaderVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center gap-8">

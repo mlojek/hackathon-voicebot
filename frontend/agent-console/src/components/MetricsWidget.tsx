@@ -50,22 +50,22 @@ export function MetricsWidget({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-600">{title}</p>
+            <p className="text-sm font-medium text-white/70">{title}</p>
             {loading && (
-              <div className="w-3 h-3 rounded-full bg-primary-200 animate-pulse" />
+              <div className="w-3 h-3 rounded-full bg-white/20 animate-pulse" />
             )}
           </div>
           <div className="mt-2 flex items-baseline">
             <p className={`text-3xl font-semibold ${isHighlighted
-              ? 'text-primary-600 transition-colors duration-1000'
-              : 'text-gray-900'}`}
+              ? 'text-white transition-colors duration-1000'
+              : 'text-white'}`}
             >
               {loading ? '...' : value}
             </p>
             {trend && (
               <span
                 className={`ml-2 text-sm font-medium ${
-                  trend.isPositive ? 'text-green-600' : 'text-red-600'
+                  trend.isPositive ? 'text-green-300' : 'text-red-300'
                 }`}
               >
                 {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
@@ -73,11 +73,11 @@ export function MetricsWidget({
             )}
           </div>
           {subtitle && (
-            <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+            <p className="mt-1 text-sm text-white/50">{subtitle}</p>
           )}
         </div>
         {icon && (
-          <div className={`rounded-lg p-3 ${colorClasses[color]}`}>
+          <div className="text-white/80">
             {icon}
           </div>
         )}

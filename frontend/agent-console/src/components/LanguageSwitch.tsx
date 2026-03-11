@@ -4,30 +4,28 @@ import { useLanguage } from '../context/LanguageContext';
 export function LanguageSwitch() {
   const { language, setLanguage } = useLanguage();
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'pl' : 'en');
-  };
-
   return (
-    <div className="flex items-center">
-      <span className="mr-2 text-sm text-gray-600">
-        {language === 'en' ? 'EN' : 'PL'}
-      </span>
+    <div className="flex items-center gap-2">
       <button
-        onClick={toggleLanguage}
-        className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 bg-gray-200"
-        role="switch"
-        aria-checked={language === 'pl'}
+        onClick={() => setLanguage('en')}
+        className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
+          language === 'en'
+            ? 'bg-white/20 text-white border border-white/40'
+            : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white/80'
+        }`}
       >
-        <span
-          className={`${
-            language === 'pl' ? 'translate-x-5' : 'translate-x-0'
-          } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-        />
+        EN
       </button>
-      <span className="ml-2 text-sm text-gray-600">
-        {language === 'en' ? 'PL' : 'EN'}
-      </span>
+      <button
+        onClick={() => setLanguage('pl')}
+        className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
+          language === 'pl'
+            ? 'bg-white/20 text-white border border-white/40'
+            : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white/80'
+        }`}
+      >
+        PL
+      </button>
     </div>
   );
 }
