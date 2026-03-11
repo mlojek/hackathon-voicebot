@@ -155,6 +155,3 @@ CREATE TRIGGER update_sessions_updated_at BEFORE UPDATE ON sessions FOR EACH ROW
 CREATE TRIGGER update_session_data_updated_at BEFORE UPDATE ON session_data FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_flows_updated_at BEFORE UPDATE ON flows FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_escalations_updated_at BEFORE UPDATE ON escalations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- Include additional triggers from triggers.sql
-\i 'triggers.sql';
